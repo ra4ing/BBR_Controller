@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class PidDebug:
     def __init__(self):
         self.errors = []

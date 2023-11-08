@@ -49,18 +49,34 @@ WoodenBox {
 TexturedBackground {
   texture "empty_office"
 }
-E-puck {
-  hidden position_0_0 3.2113116658008924
-  hidden position_0_1 3.2058879223872747
-  hidden rotation_1 0 1 0 3.2113116658008924
-  hidden rotation_2 0 1 0 3.2058879223872747
+DEF Robot E-puck {
   translation -0.685987 -0.66 -6.3949e-05
   rotation 0.0005852163828441811 -0.0005506349294570428 0.9999996771614277 1.631941101052429
-  controller "<none>"
+  controller "ER_Controller"
+  supervisor TRUE
+  emitter_channel 19
+  receiver_channel 20
   groundSensorsSlot [
     E-puckGroundSensors {
     }
   ]
+}
+DEF Supervisor Robot {
+  children [
+    Display {
+      width 500
+      height 150
+    }
+    Receiver {
+      channel 19
+    }
+    Emitter {
+      channel 20
+    }
+  ]
+  name "Supervisor"
+  controller "Supervisor_Controller"
+  supervisor TRUE
 }
 DEF OBS_Cyn2 Solid {
   translation -0.23 0.3 0.05
@@ -157,13 +173,14 @@ DEF OBS_Cyn1 Solid {
     radius 0.05
   }
 }
-SpotLight {
+DEF Light SpotLight {
   attenuation 0 0 2
   beamWidth 0.1
   cutOffAngle 0.16
   direction 1.6 0.1 -0.5
   intensity 7
   location -1.3 -0.5 0.2
+  on FALSE
 }
 OilBarrel {
   translation -0.94 -0.48 0.03

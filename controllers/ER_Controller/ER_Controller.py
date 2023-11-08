@@ -1,13 +1,30 @@
 import numpy as np
 from controller import Robot
-from pid import PID
+from ga import GA
+from trainer import Trainer
 
 
 class Controller:
     def __init__(self, robot):
         self.robot = robot
-        self.velocity_right = None
+
         self.velocity_left = None
+        self.velocity_right = None
+        self.last_genotype_str = ""
+
+        self.__init_parameters()  # Robot Parameters
+        self.__init_trainer()  # Initialize MLP
+        self.__enable_camera()  # Enable Camera
+        self.__enable_motors()  # Enable Motors
+        self.__enable_distance_sensors()  # Enable Distance Sensors
+        self.__enable_light_sensors()  # Enable Light Sensors
+        self.__enable_proximity_sensors()  # Enable Light Sensors
+        self.__enable_ground_sensors()  # Enable Ground Sensors
+
+    def reset(self):
+        self.stop()
+        self.velocity_left = 0
+        self.velocity_right = 0
 
         self.__init_parameters()  # Robot Parameters
         self.__enable_camera()  # Enable Camera
@@ -25,9 +42,11 @@ class Controller:
         self.state = 0
         self.choose_path = 0
 
-        self.pid = PID(1.0, 0.07, 0.02)
         self.time_count = 0
-        self.finish_obstacles = False
+        # self.finish_obstacles = False
+
+    def __init_trainer(self):
+        self.trainer = Trainer(self.robot, self.time_step)
 
     def __enable_camera(self):
         self.camera = self.robot.getDevice('camera')
@@ -79,6 +98,10 @@ class Controller:
         return val
 
     @staticmethod
+    def normalize_value(val, min_val, max_val):
+        return (val - min_val) / (max_val - min_val)
+
+    @staticmethod
     def map_range(val, from_min, from_max, to_min, to_max):
         from_range = from_max - from_min
         to_range = to_max - to_min
@@ -98,12 +121,15 @@ class Controller:
             lights.append(temp)
 
         if self.choose_path != 0:
+            self.trainer.inputs.append(0)
             return
 
         if min(lights) < 500:
             self.choose_path = 1
         elif (self.time_count / 1000.0) > 8.0:
             self.choose_path = -1
+
+        self.trainer.inputs.append(self.choose_path)
 
     def __read_ground_sensors(self):
         min_gs = 0
@@ -119,30 +145,30 @@ class Controller:
         center = self.adjust_value(center, min_gs, max_gs)
         right = self.adjust_value(right, min_gs, max_gs)
 
+        # save value for evolutionary
+        left_normalized = self.normalize_value(left, min_gs, max_gs)
+        center_normalized = self.normalize_value(center, min_gs, max_gs)
+        right_normalized = self.normalize_value(right, min_gs, max_gs)
+        self.trainer.inputs.append(left_normalized)
+        self.trainer.inputs.append(center_normalized)
+        self.trainer.inputs.append(right_normalized)
+
         if left > 500 and center > 500 and right > 500 and self.choose_path:  # not find line
             self.state = 2
         elif left < 500 and center < 500 and right < 500 and self.choose_path:  # all in line
-            self.finish_obstacles = True
+            # self.finish_obstacles = True
             self.state = 1
         else:  # follow line with PID
             self.state = 0
-            self.__set_pid(left, center, right)
-
-    def __set_pid(self, left, center, right):
-        self.pid_adjust = self.pid.cal_follow_line_adjust(left, center, right, self.time_step)
-        self.pid_adjust = self.adjust_value(self.pid_adjust, -self.pid.scale,
-                                            self.pid.scale)
-        self.pid_adjust = self.map_range(self.pid_adjust, -self.pid.scale, self.pid.scale,
-                                         -4.5, 4.5)
 
     def __read_distance_sensors(self):
-        if self.finish_obstacles:
-            self.finish_obstacles = False
-            return
+        # if self.finish_obstacles:
+        #     self.finish_obstacles = False
+        #     return
 
         min_ds = 0
         max_ds = 2400
-        avoid_speed = 5.5
+        avoid_speed = 5
         avoid_distance = 80
 
         # Read Distance Sensors
@@ -150,6 +176,10 @@ class Controller:
         for sensor in self.proximity_sensors:
             temp = sensor.getValue()  # Get value
             temp = self.adjust_value(temp, min_ds, max_ds)  # Adjust Values
+
+            temp_normalized = self.normalize_value(temp, min_ds, max_ds)  # save value for evolutionary
+            self.trainer.inputs.append(temp_normalized)
+
             distances.append(temp)  # Save Data
 
         self.dis_adjust = 0
@@ -185,51 +215,21 @@ class Controller:
         if cnt >= 1800:
             self.state = 4
 
-    def read_data(self):
+    def __read_data(self):
+        self.trainer.inputs = []
         self.__read_light_sensors()
         self.__read_ground_sensors()
         self.__read_distance_sensors()
         self.__read_camera()
 
-    def follow_line(self):
-        if -self.forward_threshold < self.pid_adjust < self.forward_threshold:  # forward
-            self.velocity_left = self.max_speed
-            self.velocity_right = self.max_speed
-        elif self.pid_adjust > 0:  # left
-            self.velocity_left = self.max_speed - self.pid_adjust
-            self.velocity_right = self.max_speed
-        else:  # right
-            self.velocity_right = self.max_speed + self.pid_adjust
-            self.velocity_left = self.max_speed
-
-    def avoid_obstacles(self):
-        if self.dis_adjust > 0:
-            self.velocity_left = self.max_speed - self.dis_adjust
-            self.velocity_right = self.max_speed
-        else:
-            self.velocity_right = self.max_speed + self.dis_adjust
-            self.velocity_left = self.max_speed
-
-    def turn_left(self):
-        self.velocity_left = 1
-        self.velocity_right = self.max_speed
-
-    def turn_right(self):
-        self.velocity_left = self.max_speed
-        self.velocity_right = 1
-
     def take_move(self):
-        if self.state == 0:
-            self.follow_line()
-        if self.state == 1:
-            self.turn_left() if self.choose_path == 1 else self.turn_right()
-        elif self.state == 2:
-            self.turn_right() if self.choose_path == 1 else self.turn_left()
-        elif self.state == 3:
-            self.avoid_obstacles()
-        elif self.state == 4:
-            print("finish !!!")
-            return
+        # print(self.state)
+
+        output = self.trainer.get_output_and_cal_fitness()
+        # self.velocity_left = 0.3
+        # self.velocity_right = 0.3
+        self.velocity_left = min((output[0] + 0.5), self.max_speed)
+        self.velocity_right = min((output[1] + 0.5), self.max_speed)
 
         self.left_motor.setVelocity(self.velocity_left)
         self.right_motor.setVelocity(self.velocity_right)
@@ -238,19 +238,90 @@ class Controller:
         self.left_motor.setVelocity(0)
         self.right_motor.setVelocity(0)
 
+    def run_optimization(self):
+        self.trainer.population = GA.create_random_population(self.trainer.num_weights)
+
+        print(">>>Starting Evolution using GA optimization ...\n")
+
+        # For each Generation
+        for generation in range(GA.num_generations):
+            print("Generation: {}".format(generation))
+            current_population = []
+            # Select each Genotype or Individual
+
+            for population in range(GA.num_population):
+
+                self.trainer.genotype = self.trainer.population[population]
+                fitness = self.__evaluate_genotype(self.trainer.genotype, generation)
+                # Save its fitness value
+                current_population.append((self.trainer.genotype, float(fitness)))
+                # print(current_population)
+
+            best = GA.get_best_genotype(current_population)
+            average = GA.get_average_genotype(current_population)
+            np.save("Best.npy", best[0])
+            self.trainer.plt(generation, best[1], average)
+
+            # Generate the new population_idx using genetic operators
+            if generation < GA.num_generations - 1:
+                self.trainer.population = GA.population_reproduce(current_population, GA.num_elite)
+
+        # print("All Genotypes: {}".format(self.genotypes))
+        print("GA optimization terminated.\n")
+
     def run_robot(self):
-        # Main Loop
+
+        self.reset()
+        # print("reset_environment")
         while self.robot.step(self.time_step) != -1:
-            self.read_data()
+            self.__read_data()
             self.take_move()
+
             self.time_count += self.time_step
-            if self.state == 4:
+            if self.state == 4 or (self.time_count / 1000) > 60.0:
                 break
+
         print(self.time_count)
-        self.stop()
+
+    def __evaluate_genotype(self, genotype, generation):
+        self.trainer.new_genotype_flag = False
+        if not np.array_equal(str(genotype), self.last_genotype_str):
+            self.trainer.new_genotype_flag = True
+
+        self.last_genotype_str = str(genotype)
+
+        number_interaction_loops = 3
+        fitness_per_trial = []
+        current_interaction = 0
+
+        while current_interaction < number_interaction_loops:
+
+            # trial: right
+            print("right trial")
+            self.trainer.reset_for_right()
+            self.run_robot()
+            fitness = self.trainer.cal_right_fitness_with_reward((self.state == 4), self.time_count, self.velocity_left, self.velocity_right)
+            print("Fitness: {}".format(fitness))
+            fitness_per_trial.append(fitness)
+
+            # trial: left
+            print("left trial")
+            self.trainer.reset_for_left()
+            self.run_robot()
+            fitness = self.trainer.cal_left_fitness_with_reward((self.state == 4), self.time_count, self.velocity_left, self.velocity_right)
+            print("Fitness: {}".format(fitness))
+            fitness_per_trial.append(fitness)
+
+            current_interaction += 1
+
+        fitness = np.mean(fitness_per_trial)
+        current = [generation, genotype, fitness]
+        self.trainer.genotypes.append(current)
+
+        return fitness
 
 
 if __name__ == "__main__":
     my_robot = Robot()
     controller = Controller(my_robot)
-    controller.run_robot()
+    controller.run_optimization()
