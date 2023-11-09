@@ -33,7 +33,7 @@ class Controller:
         self.max_time = 120.0
 
         self.state = 0
-        self.choose_path = 0
+        self.choose_path = 0.5
         self.time_count = 0
 
     def __init_trainer(self):
@@ -42,6 +42,10 @@ class Controller:
     def __enable_camera(self):
         self.camera = self.robot.getDevice('camera')
         self.camera.enable(self.time_step)
+        self.width = self.camera.getWidth()
+        self.height = self.camera.getHeight()
+        self.width_check = int(self.width/2)
+        self.height_check = int(self.height / 2)
 
     def __enable_motors(self):
         self.left_motor = self.robot.getDevice('left wheel motor')
@@ -95,7 +99,7 @@ class Controller:
 
     def __read_light_sensors(self):
         self.trainer.inputs.append(self.choose_path)
-        if self.choose_path != 0:
+        if self.choose_path != 0.5:
             return
 
         min_ls = 0
@@ -111,8 +115,7 @@ class Controller:
         if min(lights) < 500:
             self.choose_path = 1
         elif (self.time_count / 1000.0) >= 8.0:
-            self.choose_path = -1
-        # self.trainer.inputs.append(self.choose_path)
+            self.choose_path = 0
 
     def __read_ground_sensors(self):
         min_gs = 0
@@ -128,7 +131,11 @@ class Controller:
         center = self.adjust_value(center, min_gs, max_gs)
         right = self.adjust_value(right, min_gs, max_gs)
 
-        # save value for evolutionary
+        # # save value for evolutionary
+        # left = self.normalize_value(left, 300, 700)
+        # center = self.normalize_value(center, 300, 700)
+        # right = self.normalize_value(right, 300, 700)
+
         left_normalized = self.normalize_value(left, min_gs, max_gs)
         center_normalized = self.normalize_value(center, min_gs, max_gs)
         right_normalized = self.normalize_value(right, min_gs, max_gs)
@@ -143,19 +150,17 @@ class Controller:
         max_ds = 2400
 
         # Read Distance Sensors
-        distances = []
         for sensor in self.distance_sensors:
             temp = sensor.getValue()  # Get value
             temp = self.adjust_value(temp, min_ds, max_ds)  # Adjust Values
 
             temp_normalized = self.normalize_value(temp, min_ds, max_ds)  # save value for evolutionary
-            self.trainer.inputs.append(temp)
-
-            distances.append(temp)  # Save Data
+            temp_normalized = temp_normalized * 5
+            self.trainer.inputs.append(temp_normalized)
 
     def __read_camera(self):
-        if self.time_count / 1000 <= 40.0:
-            return
+        # if self.time_count / 1000 <= 40.0:
+        #     return
 
         if self.time_count % 1600 != 0:
             return
@@ -164,19 +169,21 @@ class Controller:
         if not image:
             return
 
-        # display the components of each pixel
-        cnt = 0
-        for x in range(0, self.camera.getWidth()):
-            for y in range(0, self.camera.getHeight()):
+        check = image[self.width_check][self.height_check]
+        if check[0] > 100 > check[2] and check[1] < 100:
+            # display the components of each pixel
+            cnt = 0
+            for x in range(self.width):
+                for y in range(self.height):
 
-                red = image[x][y][0]
-                green = image[x][y][1]
-                blue = image[x][y][2]
-                if red > 100 > blue and green < 100:
-                    cnt += 1
-                    if cnt >= 200:
-                        self.state = 4
-                        return
+                    red = image[x][y][0]
+                    green = image[x][y][1]
+                    blue = image[x][y][2]
+                    if red > 100 > blue and green < 100:
+                        cnt += 1
+                        if cnt >= 200:
+                            self.state = 4
+                            return
 
     def __read_data(self):
         self.trainer.inputs = []
@@ -184,6 +191,7 @@ class Controller:
         self.__read_ground_sensors()
         self.__read_distance_sensors()
         self.__read_camera()
+        # self.trainer.inputs.append(((self.time_count / 1000) / 120.0))
 
     def take_move(self):
         # print(self.state)
@@ -243,14 +251,15 @@ class Controller:
         print("Fitness: {}".format(fitness))
         print("GA demo terminated.\n")
 
-    def run_left_robot(self):
+    def run_robot(self):
         self.reset()
         fitness = 0
 
         while self.robot.step(self.time_step) != -1:
             self.__read_data()
             self.take_move()
-            fitness += self.trainer.cal_left_fitness_with_reward((self.state == 4), self.time_count)
+            fitness += self.trainer.cal_fitness_with_reward([self.velocity_left, self.velocity_right])
+
             self.time_count += self.time_step
             if self.state == 4:
                 print("reach goal!!!")
@@ -258,24 +267,10 @@ class Controller:
             elif (self.time_count / 1000) >= self.max_time:
                 break
 
-        return (fitness * self.time_step) / self.time_count
-
-    def run_right_robot(self):
-        self.reset()
-        fitness = 0
-
-        while self.robot.step(self.time_step) != -1:
-            self.__read_data()
-            self.take_move()
-            fitness += self.trainer.cal_right_fitness_with_reward((self.state == 4), self.time_count)
-            self.time_count += self.time_step
-            if self.state == 4:
-                print("reach goal!!!")
-                break
-            elif (self.time_count / 1000) >= self.max_time:
-                break
-
-        return (fitness * self.time_step) / self.time_count
+        fitness = (fitness * self.time_step) / self.time_count
+        if self.state == 4:
+            fitness *= 1000 * ((self.time_count / 1000) / 120.0)
+        return fitness
 
     def __evaluate_genotype(self, genotype, generation):
         self.trainer.new_genotype_flag = False
@@ -288,13 +283,13 @@ class Controller:
         number_interaction_loops = 1
         for i in range(number_interaction_loops):
             # trial: right
-            self.trainer.reset_for_right()
-            fitness = self.run_right_robot()
+            self.trainer.reset_environment("right")
+            fitness = self.run_robot()
             fitness_per_trial.append(fitness)
 
             # trial: left
-            self.trainer.reset_for_left()
-            fitness = self.run_left_robot()
+            self.trainer.reset_environment("left")
+            fitness = self.run_robot()
             fitness_per_trial.append(fitness)
 
         fitness = np.mean(fitness_per_trial)

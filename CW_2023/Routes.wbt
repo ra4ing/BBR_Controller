@@ -52,7 +52,7 @@ TexturedBackground {
 DEF Robot E-puck {
   translation -0.685987 -0.66 -6.3949e-05
   rotation 0.0005852163828441811 -0.0005506349294570428 0.9999996771614277 1.631941101052429
-  controller "BBR_Controller"
+  controller "ER_Controller"
   camera_width 18
   camera_height 18
   emitter_channel 19
@@ -181,6 +181,7 @@ DEF Light SpotLight {
   direction 1.6 0.1 -0.5
   intensity 7
   location -1.3 -0.5 0.2
+  on FALSE
 }
 OilBarrel {
   translation -0.94 -0.48 0.03

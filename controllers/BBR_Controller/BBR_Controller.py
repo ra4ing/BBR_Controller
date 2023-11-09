@@ -33,6 +33,10 @@ class Controller:
     def __enable_camera(self):
         self.camera = self.robot.getDevice('camera')
         self.camera.enable(self.time_step)
+        self.width = self.camera.getWidth()
+        self.height = self.camera.getHeight()
+        self.width_check = int(self.width / 2)
+        self.height_check = int(self.height / 2)
 
     def __enable_motors(self):
         self.left_motor = self.robot.getDevice('left wheel motor')
@@ -168,19 +172,22 @@ class Controller:
         image = self.camera.getImageArray()
         if not image:
             return
-        # display the components of each pixel
-        cnt = 0
-        for x in range(0, self.camera.getWidth()):
-            for y in range(0, self.camera.getHeight()):
 
-                red = image[x][y][0]
-                green = image[x][y][1]
-                blue = image[x][y][2]
-                if red > 100 > blue and green < 100:
-                    cnt += 1
-                    if cnt >= 200:
-                        self.state = 4
-                        return
+        check = image[self.width_check][self.height_check]
+        if check[0] > 100 > check[2] and check[1] < 100:
+            # display the components of each pixel
+            cnt = 0
+            for x in range(0, self.camera.getWidth()):
+                for y in range(0, self.camera.getHeight()):
+
+                    red = image[x][y][0]
+                    green = image[x][y][1]
+                    blue = image[x][y][2]
+                    if red > 100 > blue and green < 100:
+                        cnt += 1
+                        if cnt >= 200:
+                            self.state = 4
+                            return
         # print(cnt)
 
     def read_data(self):
