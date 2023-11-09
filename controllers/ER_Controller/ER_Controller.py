@@ -10,7 +10,6 @@ class Controller:
 
         self.velocity_left = None
         self.velocity_right = None
-        self.last_genotype = []
 
         self.__init_parameters()  # Robot Parameters
         self.__init_trainer()  # Initialize MLP
@@ -44,7 +43,7 @@ class Controller:
         self.camera.enable(self.time_step)
         self.width = self.camera.getWidth()
         self.height = self.camera.getHeight()
-        self.width_check = int(self.width/2)
+        self.width_check = int(self.width / 2)
         self.height_check = int(self.height / 2)
 
     def __enable_motors(self):
@@ -197,11 +196,12 @@ class Controller:
         # print(self.state)
 
         output = self.trainer.get_output_and_cal_fitness()
-        self.velocity_left = output[0]
-        self.velocity_right = output[1]
+        self.velocity_left = output[0] * self.max_speed
+        self.velocity_right = output[1] * self.max_speed
 
         self.left_motor.setVelocity(self.velocity_left)
         self.right_motor.setVelocity(self.velocity_right)
+        # self.stop()
 
     def stop(self):
         self.left_motor.setVelocity(0)
@@ -269,15 +269,12 @@ class Controller:
 
         fitness = (fitness * self.time_step) / self.time_count
         if self.state == 4:
-            fitness *= 1000 * ((self.time_count / 1000) / 120.0)
+            fitness *= 50 * ((self.time_count / 1000) / 120.0)
         return fitness
 
     def __evaluate_genotype(self, genotype, generation):
-        self.trainer.new_genotype_flag = False
-        if not np.array_equal(genotype, self.last_genotype):
-            self.trainer.new_genotype_flag = True
+        self.trainer.update_mlp()
 
-        self.last_genotype = genotype
         fitness_per_trial = []
 
         number_interaction_loops = 1

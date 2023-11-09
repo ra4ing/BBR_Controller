@@ -6,9 +6,9 @@ import numpy as np
 
 class GA:
     # DEFINE here the 3 GA Parameters:
-    num_generations = 80
-    num_population = 16
-    num_elite = 5
+    num_generations = 100
+    num_population = 50
+    num_elite = 20
     cp = 75
     mp = 35
 

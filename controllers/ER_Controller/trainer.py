@@ -9,12 +9,13 @@ class Trainer:
     def __init__(self, robot):
         self.robot = robot
         self.population = None
-        self.fitness_values = None
-        self.new_genotype_flag = False
         self.genotype = None
-        self.fitness_sum = None
-        self.time_step = 32
+        self.last_genotype = None
         self.wait_message = False
+
+        self.time_step = 32
+        self.online_time = 0
+        self.offline_time = 0
 
         self.__init_mlp()
         self.__init_ga()
@@ -41,9 +42,6 @@ class Trainer:
             else:
                 self.num_weights += self.number_neurons_per_layer[n - 1] * self.number_neurons_per_layer[n]
 
-        self.fitness_values = []
-        self.fitness = 0
-
     def __init_ga(self):
         # Creating the initial population
         self.population = []
@@ -55,9 +53,11 @@ class Trainer:
         self.receiver = robot.getDevice("receiver")
         self.receiver.enable(self.time_step)
 
-    def __check_for_new_genes(self):
-        if not self.new_genotype_flag:
+    def update_mlp(self):
+
+        if np.array_equal(self.genotype, self.last_genotype):
             return
+        self.last_genotype = self.genotype
 
         # Split the list based on the number of layers of your network
         part = []
@@ -95,12 +95,10 @@ class Trainer:
         # Reset fitness list
 
     def get_output_and_cal_fitness(self):
-        self.__check_for_new_genes()
         output = self.network.propagate_forward(self.inputs)
 
         output[0] = self.adjust_value(output[0], 0, 6.28)
         output[1] = self.adjust_value(output[1], 0, 6.28)
-        self.__calculate_fitness(output[0], output[1])
 
         return output
 
@@ -123,52 +121,64 @@ class Trainer:
             self.send_command("turn_off_light")
         else:
             self.send_command("turn_on_light")
-        self.fitness_values = []
 
     def plt(self, generation, best, average):
         self.send_command(
             "plt " + str(generation) + " " + str(best) + " " + str(average) + " " + str(GA.num_generations))
 
-    @staticmethod
-    def __cal_distance_weight(ds):
+    def __cal_distance_weight(self, ds, gs):
         # print("###")
         # print(ds)
-        # print(ds[2])
-        weight = 0.5
-        flag_0_7 = 0.15 < ds[0] < 0.3 or 0.15 < ds[7] < 0.3
-        flag_1_6 = 0.15 < ds[1] < 0.3 or 0.15 < ds[6] < 0.3
-        flag_2_5 = 0.15 < ds[2] < 0.3 or 0.15 < ds[5] < 0.3
-        if flag_0_7:
-            weight = 0.6
-        if flag_1_6:
-            weight = 0.8
-        if flag_2_5:
-            weight = 1
+        # print(ds[5])
+        weight = 0.1
+        flag_0_7 = 0.145 < ds[0] < 0.35 or 0.145 < ds[7] < 0.35
+        flag_1_6 = 0.145 < ds[1] < 0.35 or 0.145 < ds[6] < 0.35
+        flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
+
+        if gs[0] > 0.5 and gs[1] > 0.5 and gs[2] > 0.5:
+            if flag_0_7:
+                weight = 0.2
+            if flag_1_6:
+                weight = 0.3
+            if flag_2_5:
+                weight = 10
+
+        if self.offline_time < 10:
+            self.online_time += 1
 
         if max(ds) > 0.5:
             weight = 0
 
-        return weight
+        return weight - self.offline_time
 
-    @staticmethod
-    def __cal_ground_weight(gs):
-        temp = [(1 - i) for i in gs]
-        temp = np.mean(temp)
+    def __cal_ground_weight(self, gs):
+        weight = [(1 - i) for i in gs]
+        weight = np.mean(weight)
 
-        return temp
+        if self.online_time < 0.2:
+            self.online_time += 0.001
+
+        if gs[0] > 0.5 and gs[1] > 0.5 and gs[2] > 0.5:
+            self.online_time = 0
+            weight = 0.01
+
+        if gs[0] < 0.5 or gs[1] < 0.5 or gs[2] < 0.5:
+            self.offline_time = 0
+
+        return weight + self.online_time
 
     @staticmethod
     def __cal_light_weight(choose_path, speed, gs):
         weight = 0
         if choose_path == 0:
             if gs[0] < 0.5 and gs[1] < 0.5 and gs[2] < 0.5 and speed[0] > speed[1]:
-                weight = 0.08
+                weight = 0.1
         elif choose_path == 1:
             if gs[0] < 0.5 and gs[1] < 0.5 and gs[2] < 0.5 and speed[0] < speed[1]:
-                weight = 0.08
+                weight = 0.1
 
         if gs[0] > 0.5 and gs[1] > 0.5 and gs[2] > 0.5:
-            weight = -0.15
+            weight = 0
 
         return weight
 
@@ -187,19 +197,21 @@ class Trainer:
         ds = self.adjust_value(ds, 0, 1)
         gs = self.adjust_value(gs + ls, 0, 1) if gs > 0.4 else 0
 
-        ret = (fitness) * (ds) * (gs*2)
+        ret = (fitness) * (ds) * (gs * 2)
         # print("###")
         # print("fitness\tgs\t\tds\tls\tret")
         # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
-        return ret * 10
+        return ret
 
     def cal_fitness_with_reward(self, speed):
 
+        fitness = self.__calculate_fitness(speed[0], speed[1])
+
         light_sensors = self.__cal_light_weight(self.inputs[0], speed, self.inputs[1:4])
         ground_sensors = self.__cal_ground_weight(self.inputs[1:4])
-        distance_sensors = self.__cal_distance_weight(self.inputs[4:12])
+        distance_sensors = self.__cal_distance_weight(self.inputs[4:12], self.inputs[1:4])
 
-        return self.__combine_fitness_with_reward(self.fitness, ground_sensors, distance_sensors, light_sensors)
+        return self.__combine_fitness_with_reward(fitness, ground_sensors, distance_sensors, light_sensors)
 
     def __calculate_fitness(self, velocity_left, velocity_right):
         forward_fitness = self.normalize_value((velocity_left + velocity_right) / 2.0, 0, 6.28)
@@ -207,10 +219,9 @@ class Trainer:
         avoid_collision_fitness = 1
         spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 6.28)
         # spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
-        combined_fitness = (forward_fitness) * (avoid_collision_fitness) * (spinning_fitness**2)
+        combined_fitness = (forward_fitness) * (avoid_collision_fitness) * (spinning_fitness ** 4)
         # print("###")
         # print(str(forward_fitness) + "\t" + str(avoid_collision_fitness) + "\t" + str(spinning_fitness) + "\t" + str(combined_fitness))
         # self.fitness_values.append(combined_fitness)
         # self.fitness = np.mean(self.fitness_values)
-        self.fitness = combined_fitness
-
+        return combined_fitness
