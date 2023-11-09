@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from controller import Robot
 from pid import PID
@@ -14,7 +16,6 @@ class Controller:
         self.__enable_motors()  # Enable Motors
         self.__enable_distance_sensors()  # Enable Distance Sensors
         self.__enable_light_sensors()  # Enable Light Sensors
-        self.__enable_proximity_sensors()  # Enable Light Sensors
         self.__enable_ground_sensors()  # Enable Ground Sensors
 
     def __init_parameters(self):
@@ -56,13 +57,6 @@ class Controller:
             sensor_name = 'ls' + str(i)
             self.light_sensors.append(self.robot.getDevice(sensor_name))
             self.light_sensors[i].enable(self.time_step)
-
-    def __enable_proximity_sensors(self):
-        self.proximity_sensors = []
-        for i in range(8):
-            sensor_name = 'ps' + str(i)
-            self.proximity_sensors.append(self.robot.getDevice(sensor_name))
-            self.proximity_sensors[i].enable(self.time_step)
 
     def __enable_ground_sensors(self):
         self.left_ir = self.robot.getDevice('gs0')
@@ -142,12 +136,12 @@ class Controller:
 
         min_ds = 0
         max_ds = 2400
-        avoid_speed = 5.5
+        avoid_speed = 5
         avoid_distance = 80
 
         # Read Distance Sensors
         distances = []
-        for sensor in self.proximity_sensors:
+        for sensor in self.distance_sensors:
             temp = sensor.getValue()  # Get value
             temp = self.adjust_value(temp, min_ds, max_ds)  # Adjust Values
             distances.append(temp)  # Save Data
@@ -166,7 +160,10 @@ class Controller:
                     self.dis_adjust = -avoid_speed
 
     def __read_camera(self):
-        self.camera.getImage()
+        # self.camera.getImage()
+
+        if self.time_count % 1600 != 0:
+            return
 
         image = self.camera.getImageArray()
         if not image:
@@ -179,11 +176,12 @@ class Controller:
                 red = image[x][y][0]
                 green = image[x][y][1]
                 blue = image[x][y][2]
-                if red > 100 and green < 20 and blue < 20:
+                if red > 100 > blue and green < 100:
                     cnt += 1
-
-        if cnt >= 1800:
-            self.state = 4
+                    if cnt >= 200:
+                        self.state = 4
+                        return
+        # print(cnt)
 
     def read_data(self):
         self.__read_light_sensors()
@@ -211,12 +209,12 @@ class Controller:
             self.velocity_left = self.max_speed
 
     def turn_left(self):
-        self.velocity_left = 1
+        self.velocity_left = 0.5
         self.velocity_right = self.max_speed
 
     def turn_right(self):
         self.velocity_left = self.max_speed
-        self.velocity_right = 1
+        self.velocity_right = 0.5
 
     def take_move(self):
         if self.state == 0:
@@ -228,7 +226,7 @@ class Controller:
         elif self.state == 3:
             self.avoid_obstacles()
         elif self.state == 4:
-            print("finish !!!")
+            print("finish !!!\n")
             return
 
         self.left_motor.setVelocity(self.velocity_left)

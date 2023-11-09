@@ -2,24 +2,29 @@ import numpy as np
 
 from ga import GA
 from mlp import MLP
-import math
 
 
 class Trainer:
 
-    def __init__(self, robot, time_step):
+    def __init__(self, robot):
+        self.robot = robot
         self.population = None
+        self.fitness_values = None
         self.run_complete = False
         self.new_genotype_flag = False
         self.genotype = None
+        self.fitness_sum = None
+        self.time_step = 32
+        self.time_mul = 0
+        self.wait_message = False
 
         self.__init_mlp()
         self.__init_ga()
-        self.__init_receiver_and_emitter(robot, time_step)
+        self.__init_receiver_and_emitter(robot)
 
     def __init_mlp(self):
         self.number_input_layer = 12
-        self.number_hidden_layer = [12, 12]
+        self.number_hidden_layer = [12, 10]
         self.number_output_layer = 2
 
         self.number_neurons_per_layer = []
@@ -47,10 +52,10 @@ class Trainer:
         # All Genotypes
         self.genotypes = []
 
-    def __init_receiver_and_emitter(self, robot, time_step):
+    def __init_receiver_and_emitter(self, robot):
         self.emitter = robot.getDevice("emitter")
         self.receiver = robot.getDevice("receiver")
-        self.receiver.enable(time_step)
+        self.receiver.enable(self.time_step)
 
     def __check_for_new_genes(self):
         if not self.new_genotype_flag:
@@ -90,88 +95,131 @@ class Trainer:
         self.network.weights = data
 
         # Reset fitness list
-        self.fitness_values = []
-
-    @staticmethod
-    def calculate_weight(x):
-        mu = 100
-        sigma = 15
-        weight = 1 / (sigma * math.sqrt(2 * math.pi)) * math.exp(- (x - mu) ** 2 / (2 * sigma ** 2))
-        return weight
 
     def get_output_and_cal_fitness(self):
         self.__check_for_new_genes()
         output = self.network.propagate_forward(self.inputs)
+
+        output[0] = self.adjust_value(output[0], 0.5, 6.28)
+        output[1] = self.adjust_value(output[1], 0.5, 6.28)
         self.__calculate_fitness(output[0], output[1])
 
         return output
 
-    def __calculate_fitness(self, velocity_left, velocity_right):
-        forward_fitness = (velocity_left + velocity_right) / 2.0
-        avoid_collision_fitness = 1 - max(self.inputs[4:12])
-        spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
-        combined_fitness = forward_fitness * avoid_collision_fitness * spinning_fitness
-
-        self.fitness_values.append(combined_fitness)
-        self.fitness = np.mean(self.fitness_values)
-
-    def __wait_for_message(self):
-        reset_complete = False
+    def wait_for_message(self):
         while self.receiver.getQueueLength() > 0:
-
+            self.wait_message = True
             received_data = self.receiver.getString()
             if received_data == "True":
-                reset_complete = True
+                return True
             self.receiver.nextPacket()
 
-        return reset_complete
+        return False
 
-    def send_command_and_wait(self, message):
+    def send_command(self, message):
         message = message.encode("utf-8")
         self.emitter.send(message)
 
-        # while not self.__wait_for_message():
-        #     pass
-
     def reset_for_left(self):
-        self.send_command_and_wait("turn_on_light")
+        self.send_command("turn_on_light")
+        self.fitness_values = []
 
     def reset_for_right(self):
-        self.send_command_and_wait("turn_off_light")
+        self.send_command("turn_off_light")
+        self.fitness_values = []
 
     def plt(self, generation, best, average):
-        self.send_command_and_wait("plt " + str(generation) + " " + str(best) + " " + str(average) + " " + str(GA.num_generations))
+        self.send_command(
+            "plt " + str(generation) + " " + str(best) + " " + str(average) + " " + str(GA.num_generations))
 
-    def cal_left_fitness_with_reward(self, reach_goal_flag, time_count, left_speed, right_speed):
-        left_light = 0
-        if self.inputs[0] == 1 and right_speed > left_speed:
-            left_light = (1 - self.inputs[3])
+    @staticmethod
+    def __cal_distance_weight(ds, time_count):
+        if time_count / 1000 < 10.0:
+            return 0.1
 
-        ground_sensors = sum((1 - self.inputs[i]) for i in range(1, 4))
-        distance_sensors = max((self.calculate_weight(self.inputs[i]) for i in range(4, 12)))
-        if self.inputs[0] == 0:
-            distance_sensors = 0
-        reach_goal = 20 if reach_goal_flag else 0
+        weight = 0.1
+        flag_0_7 = 80 < ds[0] < 130 or 80 < ds[7] < 130
+        flag_1_6 = 80 < ds[1] < 130 or 80 < ds[6] < 130
+        flag_2_5 = 80 < ds[2] < 130 or 80 < ds[5] < 130
+        if flag_0_7:
+            weight += 0.1
+        if flag_1_6:
+            weight += 0.3
+        if flag_2_5:
+            weight += 0.5
 
-        print(self.fitness, left_light, ground_sensors, distance_sensors, reach_goal, (time_count / 1000.0) * 0.1)
-        fitness = self.fitness*3 + left_light + ground_sensors*3 + distance_sensors*2 + left_light
-        fitness += reach_goal - (time_count / 1000.0) * 0.1
+        return weight
 
-        return fitness
+    @staticmethod
+    def __cal_ground_weight(gs):
+        temp = [(1 - i) for i in gs]
+        temp = np.mean(temp)
 
-    def cal_right_fitness_with_reward(self, reach_goal_flag, time_count, left_speed, right_speed):
-        right_light = 0
-        if self.inputs[0] == -1 and left_speed > right_speed:
-            right_light = (1 - self.inputs[1])
+        return temp
 
-        ground_sensors = sum((1 - self.inputs[i]) for i in range(1, 4))
-        distance_sensors = max((self.calculate_weight(self.inputs[i]) for i in range(4, 12)))
-        if self.inputs[0] == 0:
-            distance_sensors = 0
-        reach_goal = 20 if reach_goal_flag else 0
+    @staticmethod
+    def __cal_light_weight(choose_path, gs):
+        weight = 0
+        if choose_path and gs[0] < 0.5 and gs[1] < 0.5 and gs[2] < 0.5:
+            weight = 0.1
 
-        print(self.fitness, right_light, ground_sensors*3, distance_sensors*2, reach_goal, (time_count / 1000.0) * 0.1)
-        fitness = self.fitness*3 + ground_sensors + distance_sensors + right_light
-        fitness += reach_goal + right_light - (time_count / 1000.0) * 0.1
+        return weight
 
-        return fitness
+    @staticmethod
+    def __cal_reach_weight(reach_goal_flag):
+        if reach_goal_flag:
+            return 10
+
+        return 1
+
+    @staticmethod
+    def normalize_value(val, min_val, max_val):
+        return (val - min_val) / (max_val - min_val)
+
+    @staticmethod
+    def adjust_value(val, min_val, max_val):
+        val = max(val, min_val)
+        val = min(val, max_val)
+        return val
+
+    def __cal_fitness(self, fitness, gs, ds, ls, reach_goal):
+        fitness = self.adjust_value(fitness, 0, 1)
+        ds = self.adjust_value(ds, 0, 1)
+        gs = self.adjust_value(gs + ls, 0, 1) if gs > 0.5 else 0
+
+        ret = fitness * ds * (gs ** 2) * reach_goal
+        # print("###")
+        # print("fitness\tgs\t\tds\tls\tfitness")
+        # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(fitness))
+        return ret * 100
+
+    def cal_left_fitness_with_reward(self, reach_goal_flag, time_count):
+
+        light_sensors = self.__cal_light_weight((self.inputs[0] == 1), self.inputs[1:4])
+        ground_sensors = self.__cal_ground_weight(self.inputs[1:4])
+        distance_sensors = self.__cal_distance_weight(self.inputs[4:12], time_count)
+        reach_goal = self.__cal_reach_weight(reach_goal_flag)
+
+        return self.__cal_fitness(self.fitness, ground_sensors, distance_sensors, light_sensors, reach_goal)
+
+    def cal_right_fitness_with_reward(self, reach_goal_flag, time_count):
+
+        light_sensors = self.__cal_light_weight((self.inputs[0] == -1), self.inputs[1:4])
+        ground_sensors = self.__cal_ground_weight(self.inputs[1:4])
+        distance_sensors = self.__cal_distance_weight(self.inputs[4:12], time_count)
+        reach_goal = self.__cal_reach_weight(reach_goal_flag)
+
+        return self.__cal_fitness(self.fitness, ground_sensors, distance_sensors, light_sensors, reach_goal)
+
+    def __calculate_fitness(self, velocity_left, velocity_right):
+        forward_fitness = self.normalize_value((velocity_left + velocity_right) / 2.0, 0, 6.28)
+        avoid_collision_fitness = 1 - self.normalize_value(max(self.inputs[4:12]), 0, 2400)
+        spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 6.28)
+        # spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
+        combined_fitness = forward_fitness * avoid_collision_fitness * (spinning_fitness**2)
+        # print(velocity_right, velocity_left)
+        # print("###")
+        # print(str(forward_fitness) + "\t" + str(avoid_collision_fitness) + "\t" + str(spinning_fitness) + "\t" + str(combined_fitness))
+        self.fitness_values.append(combined_fitness)
+        self.fitness = np.mean(self.fitness_values)
+

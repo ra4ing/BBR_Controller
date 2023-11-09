@@ -5,16 +5,16 @@ import numpy as np
 
 
 class GA:
-
     # DEFINE here the 3 GA Parameters:
-    num_generations = 100
-    num_population = 20
-    num_elite = 5
+    num_generations = 50
+    num_population = 8
+    num_elite = 3
+    cp = 70
+    mp = 30
 
     @staticmethod
-    def population_reproduce(genotypes, elite):
+    def population_reproduce(genotypes):
         # crossover rate (integer number between 0 and 100):
-        cp = 50
 
         genotypes_not_ranked = genotypes
         # Rank: lowest to highest fitness
@@ -25,9 +25,9 @@ class GA:
         # Backwards: from highest to lowest fitness
         for individual in range(population_size, 0, -1):
             # Clone the elite individuals
-            if population_size - individual < elite:
+            if population_size - individual < GA.num_elite:
                 new_population.append(genotypes[individual - 1][0])
-            elif random.randint(1, 100) > cp:
+            elif random.randint(1, 100) > GA.cp:
                 new_population.append(genotypes[individual - 1][0])
             else:
                 # Generate the rest of the population by using the genetic operations
@@ -91,10 +91,9 @@ class GA:
         after_mutation = []
 
         # mutation percentage (integer number between 0 and 100):
-        mp = 50
 
         for gene in range(len(child)):
-            if random.randint(1, 100) < mp:
+            if random.randint(1, 100) < GA.mp:
                 # The random value to be added to the gene
                 random_value = numpy.random.uniform(-1.0, 1.0, 1)
                 temp = child[gene] + random_value[0]

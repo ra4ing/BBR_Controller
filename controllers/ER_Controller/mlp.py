@@ -6,6 +6,9 @@ def sigmoid(x):
     return np.tanh(x)
 
 
+def relu(x):
+    return np.maximum(0, x)
+
 class MLP:
     ''' Multi-layer perceptron class. '''
 
@@ -42,7 +45,7 @@ class MLP:
         # Propagate from layer 0 to layer n-1 using sigmoid as activation function
         for i in range(1, len(self.shape)):
             # Propagate activity
+            # self.layers[i][...] = sigmoid(np.dot(self.layers[i - 1], self.weights[i - 1]))
             self.layers[i][...] = sigmoid(np.dot(self.layers[i - 1], self.weights[i - 1]))
-
         # Return output
         return self.layers[-1]
