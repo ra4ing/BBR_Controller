@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 from ga import GA
@@ -23,7 +25,7 @@ class Trainer:
 
     def __init_mlp(self):
         self.number_input_layer = 12
-        self.number_hidden_layer = [12, 12]
+        self.number_hidden_layer = [12, 6]
         self.number_output_layer = 2
 
         self.number_neurons_per_layer = []
@@ -45,8 +47,8 @@ class Trainer:
     def __init_ga(self):
         # Creating the initial population
         self.population = []
-        # All Genotypes
-        self.genotypes = []
+        # # All Genotypes
+        # self.genotypes = []
 
     def __init_receiver_and_emitter(self, robot):
         self.emitter = robot.getDevice("emitter")
@@ -122,6 +124,12 @@ class Trainer:
         else:
             self.send_command("turn_on_light")
 
+    def wait_reset_complete(self):
+        print("waiting...")
+        while self.robot.step(self.time_step) != -1:
+            if self.wait_for_message():
+                return True
+
     def plt(self, generation, best, average):
         self.send_command(
             "plt " + str(generation) + " " + str(best) + " " + str(average) + " " + str(GA.num_generations))
@@ -136,20 +144,25 @@ class Trainer:
         flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
 
         if gs[0] > 0.5 and gs[1] > 0.5 and gs[2] > 0.5:
+            flag = False
             if flag_0_7:
                 weight = 0.2
+                flag = True
             if flag_1_6:
                 weight = 0.3
+                flag = True
             if flag_2_5:
                 weight = 10
+                flag = True
 
-        if self.offline_time < 10:
-            self.online_time += 1
+            if flag and self.offline_time < 10:
+                self.online_time -= 0.2
+                weight += self.offline_time
 
         if max(ds) > 0.5:
             weight = 0
 
-        return weight - self.offline_time
+        return weight
 
     def __cal_ground_weight(self, gs):
         weight = [(1 - i) for i in gs]
@@ -197,11 +210,11 @@ class Trainer:
         ds = self.adjust_value(ds, 0, 1)
         gs = self.adjust_value(gs + ls, 0, 1) if gs > 0.4 else 0
 
-        ret = (fitness) * (ds) * (gs * 2)
+        ret = (fitness) * (ds) * (gs)
         # print("###")
         # print("fitness\tgs\t\tds\tls\tret")
         # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
-        return ret
+        return ret * 10
 
     def cal_fitness_with_reward(self, speed):
 
@@ -219,7 +232,7 @@ class Trainer:
         avoid_collision_fitness = 1
         spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 6.28)
         # spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
-        combined_fitness = (forward_fitness) * (avoid_collision_fitness) * (spinning_fitness ** 4)
+        combined_fitness = (forward_fitness**0.5) * (avoid_collision_fitness) * (spinning_fitness ** 4)
         # print("###")
         # print(str(forward_fitness) + "\t" + str(avoid_collision_fitness) + "\t" + str(spinning_fitness) + "\t" + str(combined_fitness))
         # self.fitness_values.append(combined_fitness)

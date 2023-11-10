@@ -10,6 +10,9 @@ class Controller:
 
         self.velocity_left = None
         self.velocity_right = None
+        self.time_count = None
+        self.choose_path = None
+        self.state = None
 
         self.__init_parameters()  # Robot Parameters
         self.__init_trainer()  # Initialize MLP
@@ -21,10 +24,10 @@ class Controller:
 
     def reset(self):
         self.stop()
-        self.velocity_left = 0
-        self.velocity_right = 0
 
-        self.__init_parameters()  # Robot Parameters
+        self.state = 0
+        self.choose_path = 0.5
+        self.time_count = 0
 
     def __init_parameters(self):
         self.time_step = 32  # ms
@@ -204,6 +207,8 @@ class Controller:
         # self.stop()
 
     def stop(self):
+        self.velocity_left = 0
+        self.velocity_right = 0
         self.left_motor.setVelocity(0)
         self.right_motor.setVelocity(0)
 
@@ -223,7 +228,7 @@ class Controller:
                 print("-------------------")
                 print("Population: {}".format(population))
                 self.trainer.genotype = self.trainer.population[population]
-                fitness = self.__evaluate_genotype(self.trainer.genotype, generation)
+                fitness = self.__evaluate_genotype()
                 # Save its fitness value
                 current_population.append((self.trainer.genotype, float(fitness)))
                 # print(current_population)
@@ -233,7 +238,7 @@ class Controller:
             print("-------------------")
             print("Best: {}".format(best[1]))
             print("Average: {}".format(average))
-            np.save("Best.npy", best[0])
+            np.save("../module/Best{}.npy".format(generation), best[0])
             self.trainer.plt(generation, best[1], average)
 
             # Generate the new population_idx using genetic operators
@@ -246,9 +251,16 @@ class Controller:
     def run_best(self):
         self.trainer.genotype = np.load("Best.npy")
 
-        fitness = self.__evaluate_genotype(self.trainer.genotype, None)
-
+        # trial: right
+        self.trainer.reset_environment("right")
+        fitness = self.run_robot()
         print("Fitness: {}".format(fitness))
+
+        # trial: left
+        self.trainer.reset_environment("left")
+        fitness = self.run_robot()
+        print("Fitness: {}".format(fitness))
+
         print("GA demo terminated.\n")
 
     def run_robot(self):
@@ -268,11 +280,11 @@ class Controller:
                 break
 
         fitness = (fitness * self.time_step) / self.time_count
-        if self.state == 4:
-            fitness *= 50 * ((self.time_count / 1000) / 120.0)
+        if self.state == 4 and (self.time_count / 1000) > 10.0:
+            fitness *= 50 * ((self.time_count / 1000) / self.max_time)
         return fitness
 
-    def __evaluate_genotype(self, genotype, generation):
+    def __evaluate_genotype(self):
         self.trainer.update_mlp()
 
         fitness_per_trial = []
@@ -281,18 +293,20 @@ class Controller:
         for i in range(number_interaction_loops):
             # trial: right
             self.trainer.reset_environment("right")
+            self.trainer.wait_reset_complete()
             fitness = self.run_robot()
             fitness_per_trial.append(fitness)
 
             # trial: left
             self.trainer.reset_environment("left")
+            self.trainer.wait_reset_complete()
             fitness = self.run_robot()
             fitness_per_trial.append(fitness)
 
         fitness = np.mean(fitness_per_trial)
         print("Fitness: {}".format(fitness))
-        current = [generation, genotype, fitness]
-        self.trainer.genotypes.append(current)
+        # current = [generation, genotype, fitness]
+        # self.trainer.genotypes.append(current)
 
         return fitness
 

@@ -117,6 +117,7 @@ class Reset:
         self.finish_train = False
         while self.supervisor.step(self.time_step) != -1:
             self.handle_receiver()
+            self.send_message("True")
             if self.finish_train:
                 break
 
@@ -133,21 +134,20 @@ if __name__ == '__main__':
     print("To start the simulation please click anywhere in the SIMULATION WINDOW(3D Window) and press either:")
     print("(S|s)to Search for New Best Individual OR (R|r) to Run Best Individual")
     print("***************************************************************************************************")
-    # trainer.send_message("False")
-    # while trainer.supervisor.step(trainer.time_step) != -1:
-    # resp = None
-    # print("getting key...")
-    # while trainer.supervisor.step(trainer.time_step) != -1 and resp not in [82, 83, 65619]:
-    #     resp = keyboard.getKey()
-    #
-    # if resp == 83 or resp == 65619:
-    #     trainer.send_message("True")
-    #     print("(S|s)to Search for New Best Individual OR (R|r) to Run Best Individual")
-    #     # print("(R|r)un Best Individual or (S|s)earch for New Best Individual:")
-    # elif resp == 82 or resp == 65619:
-    #     trainer.send_message("False")
-    #     print("(S|s)to Search for New Best Individual OR (R|r) to Run Best Individual")
 
-    trainer.send_message("True")
+    resp = None
+    print("getting key...")
+    while trainer.supervisor.step(trainer.time_step) != -1 and resp not in [82, 83, 65619]:
+        resp = keyboard.getKey()
+
+    if resp == 83 or resp == 65619:
+        trainer.send_message("True")
+        print("(S|s)to Search for New Best Individual OR (R|r) to Run Best Individual")
+        # print("(R|r)un Best Individual or (S|s)earch for New Best Individual:")
+    elif resp == 82 or resp == 65619:
+        trainer.send_message("False")
+        print("(S|s)to Search for New Best Individual OR (R|r) to Run Best Individual")
+
+    # trainer.send_message("True")
     trainer.train()
 
