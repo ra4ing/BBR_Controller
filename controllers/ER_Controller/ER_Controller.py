@@ -255,7 +255,7 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(46, 47):
+        for i in range(47, 48):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
             self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
