@@ -1,7 +1,4 @@
-import time
-
 import numpy as np
-
 from ga import GA
 from mlp import MLP
 
@@ -10,7 +7,6 @@ class Trainer:
 
     def __init__(self, robot):
         self.robot = robot
-        self.population = None
         self.genotype = None
         self.last_genotype = None
         self.wait_message = False
@@ -20,7 +16,6 @@ class Trainer:
         self.offline_time = 0
 
         self.__init_mlp()
-        self.__init_ga()
         self.__init_receiver_and_emitter(robot)
 
     def __init_mlp(self):
@@ -43,12 +38,6 @@ class Trainer:
                 self.num_weights += (self.number_neurons_per_layer[n - 1] + 1) * self.number_neurons_per_layer[n]
             else:
                 self.num_weights += self.number_neurons_per_layer[n - 1] * self.number_neurons_per_layer[n]
-
-    def __init_ga(self):
-        # Creating the initial population
-        self.population = []
-        # # All Genotypes
-        # self.genotypes = []
 
     def __init_receiver_and_emitter(self, robot):
         self.emitter = robot.getDevice("emitter")
@@ -98,9 +87,15 @@ class Trainer:
 
     def get_output_and_cal_fitness(self):
         output = self.network.propagate_forward(self.inputs)
+        # print("###################")
+        # print(output)
+        output[0] = self.normalize_value(output[0], -1, 1) * 6.28
+        output[1] = self.normalize_value(output[1], -1, 1) * 6.28
+        # print("-------------------")
+        # print(output)
 
-        output[0] = self.adjust_value(output[0], 0, 6.28)
-        output[1] = self.adjust_value(output[1], 0, 6.28)
+        # output[0] = self.adjust_value(output[0], 0, 6.28)
+        # output[1] = self.adjust_value(output[1], 0, 6.28)
 
         return output
 
@@ -173,18 +168,22 @@ class Trainer:
         return weight + self.online_time
 
     @staticmethod
-    def __cal_light_weight(choose_path, speed, online, offline):
+    def __cal_light_weight(choose_path, gs):
         weight = 0
         if choose_path == -1:
-            if online and speed[0] > speed[1]:
-                weight = 0.1
-            elif offline and speed[0] < speed[1]:
-                weight = 0.3
+            if gs[0] < 0.5 < gs[2] and gs[1] < 0.5:
+                weight = 0.35
+            # if online and speed[0] > speed[1]:
+            #     weight = 0.1
+            # elif offline and speed[0] < speed[1]:
+            #     weight = 0.3
         elif choose_path == 1:
-            if online and speed[0] < speed[1]:
-                weight = 0.1
-            elif offline and speed[0] > speed[1]:
-                weight = 0.3
+            if gs[2] < 0.5 < gs[0] and gs[1] < 0.5:
+                weight = 0.35
+            # if online and speed[0] < speed[1]:
+            #     weight = 0.1
+            # elif offline and speed[0] > speed[1]:
+            #     weight = 0.3
 
         return weight
 
@@ -209,18 +208,18 @@ class Trainer:
         # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
         return ret * 5
 
-    def cal_fitness_with_reward(self, speed):
+    def cal_fitness_and_reward(self, speed):
 
         fitness = self.__calculate_fitness(speed[0], speed[1])
 
         online = self.inputs[1] < 0.5 and self.inputs[2] < 0.5 and self.inputs[3] < 0.5
         offline = self.inputs[1] > 0.5 and self.inputs[2] > 0.5 and self.inputs[3] > 0.5
 
-        light_sensors = self.__cal_light_weight(self.inputs[0], speed, online, offline)
-        ground_sensors = self.__cal_ground_weight(self.inputs[1:4], online, offline)
-        distance_sensors = self.__cal_distance_weight(self.inputs[4:12], offline)
+        light_rewards = self.__cal_light_weight(self.inputs[0], self.inputs[1:4])
+        ground_rewards = self.__cal_ground_weight(self.inputs[1:4], online, offline)
+        distance_rewards = self.__cal_distance_weight(self.inputs[4:12], offline)
 
-        return self.__combine_fitness_with_reward(fitness, ground_sensors, distance_sensors, light_sensors)
+        return self.__combine_fitness_with_reward(fitness, ground_rewards, distance_rewards, light_rewards)
 
     def __calculate_fitness(self, velocity_left, velocity_right):
         forward_fitness = self.normalize_value((velocity_left + velocity_right) / 2.0, 0, 6.28)

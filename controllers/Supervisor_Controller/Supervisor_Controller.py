@@ -17,6 +17,7 @@ class Reset:
         self.__init_light_node()
         self.__init_receiver_and_emitter()
         self.__init_display()
+        self.__init_obstacle_node()
 
     def __init_display(self):
         # Display: screen to plot the fitness values of the best individual and the average of the entire population
@@ -30,14 +31,46 @@ class Reset:
 
     def __init_parameters(self):
         self.time_step = 32
-        self.end_position = [0.102188, 0.901722, -6.3962e-05]
-        self.initial_trans = [-0.685987, -0.66, -6.3949e-05]
-        self.initial_rot = [0.000585216, -0.000550635, 1, 1.63194]
 
     def __init_robot_node(self):
         self.robot_node = self.supervisor.getFromDef("Robot")
         self.trans_field = self.robot_node.getField("translation")
         self.rot_field = self.robot_node.getField("rotation")
+
+        self.end_position = [0.102188, 0.901722, -6.3962e-05]
+        self.initial_trans = [-0.685987, -0.66, -6.3949e-05]
+        self.initial_rot = [0.000585216, -0.000550635, 1, 1.63194]
+
+    def __init_obstacle_node(self):
+        obs_wooden_1 = self.supervisor.getFromDef("wooden_box_1")
+        obs_wooden_2 = self.supervisor.getFromDef("wooden_box_2")
+        obs_cyn_1 = self.supervisor.getFromDef("OBS_Cyn1")
+        obs_cyn_2 = self.supervisor.getFromDef("OBS_Cyn2")
+        obs_final_1 = self.supervisor.getFromDef("OBS_FINAL_1")
+        obs_final_2 = self.supervisor.getFromDef("OBS_FINAL_2")
+        obs_final_3 = self.supervisor.getFromDef("OBS_FINAL_3")
+
+        self.OBS = [obs_wooden_1, obs_wooden_2, obs_cyn_1, obs_cyn_2, obs_final_1, obs_final_2, obs_final_3]
+        self.OBS_trans_field = []
+        self.OBS_rot_field = []
+        for obs in self.OBS:
+            self.OBS_trans_field.append(obs.getField("translation"))
+            self.OBS_rot_field.append(obs.getField("rotation"))
+
+        self.OBS_trans_vec = [[0.35, 0.26, 0.0496067],
+                              [-0.21, 0.69, 0.0496067],
+                              [0.38, 0.71, 0.05],
+                              [-0.23, 0.3, 0.05],
+                              [0.17, 0.97, 0],
+                              [0.1, 0.995, 0],
+                              [0.04, 0.97, 0]]
+        self.OBS_rot_vec = [[-0.96691, -0.175804, 0.184873, 0],
+                            [1.81694e-12, 5.45078e-12, 1, 0],
+                            [0, 0, 1, 0],
+                            [0, 0, 1, 0],
+                            [0, 0, 1, 1.57],
+                            [0, 0, 1, -3.14],
+                            [0, 0, 1, 1.57]]
 
     def __init_light_node(self):
         self.light_node = self.supervisor.getFromDef("Light")
@@ -80,23 +113,15 @@ class Reset:
                 self.plot_fitness(generation, best, average, num_generations)
             if received_data == "turn_on_light":
                 self.reset_robot()
+                self.reset_obstacle()
                 self.turn_on_light()
             elif received_data == "turn_off_light":
                 self.reset_robot()
+                self.reset_obstacle()
                 self.turn_off_light()
-            # elif received_data == "finish_turn":
-            #     self.message = "False"
-            #     if self.__cal_distance() < 0.004:
-            #         self.message = "True"
 
             self.receiver.nextPacket()
 
-    # def __cal_distance(self):
-    #     values = self.trans_field.getSFVec3f()
-    #     x = (values[0] - self.end_position[0]) ** 2
-    #     y = (values[1] - self.end_position[1]) ** 2
-    #     return x + y
-    #
     def send_message(self, message):
         message = message.encode("utf-8")
         self.emitter.send(message)
@@ -105,6 +130,12 @@ class Reset:
         self.trans_field.setSFVec3f(self.initial_trans)
         self.rot_field.setSFRotation(self.initial_rot)
         self.robot_node.resetPhysics()
+
+    def reset_obstacle(self):
+        for i in range(len(self.OBS_trans_field)):
+            self.OBS_trans_field[i].setSFVec3f(self.OBS_trans_vec[i])
+            self.OBS_rot_field[i].setSFRotation(self.OBS_rot_vec[i])
+            self.OBS[i].resetPhysics()
 
     def turn_on_light(self):
         self.light_on.setSFBool(True)

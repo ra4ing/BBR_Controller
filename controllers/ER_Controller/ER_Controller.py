@@ -17,7 +17,6 @@ class Controller:
         self.right_count = None
         self.left_count = None
 
-
         self.__init_parameters()  # Robot Parameters
         self.__init_trainer()  # Initialize MLP
         self.__enable_camera()  # Enable Camera
@@ -200,8 +199,8 @@ class Controller:
         # print(self.state)
 
         output = self.trainer.get_output_and_cal_fitness()
-        self.velocity_left = output[0] * self.max_speed
-        self.velocity_right = output[1] * self.max_speed
+        self.velocity_left = output[0]
+        self.velocity_right = output[1]
 
         if self.velocity_left > self.velocity_right:
             self.left_count += 1
@@ -218,26 +217,50 @@ class Controller:
         self.left_motor.setVelocity(0)
         self.right_motor.setVelocity(0)
 
+    def __evaluate_genotype(self):
+        self.trainer.update_mlp()
+
+        fitness_per_trial = []
+
+        number_interaction_loops = 1
+        for i in range(number_interaction_loops):
+
+            self.trainer.reset_environment("right")
+            self.trainer.wait_reset_complete()
+            fitness = self.run_robot()
+            fitness_per_trial.append(fitness)
+
+            self.trainer.reset_environment("left")
+            self.trainer.wait_reset_complete()
+            fitness = self.run_robot()
+            fitness_per_trial.append(fitness)
+
+        fitness = np.mean(fitness_per_trial)
+        print("Fitness: {}".format(fitness))
+        return fitness
+
     def run_optimization(self):
-        self.trainer.population = GA.create_random_population(self.trainer.num_weights)
+        populations = GA.create_random_population(self.trainer.num_weights)
 
         print(">>>Starting Evolution using GA optimization ...\n")
 
         # For each Generation
         for generation in range(GA.num_generations):
+
             print("+++++++++++++++++++++++++++++++++++++++++++++++++++")
             print("Generation: {}".format(generation))
             current_population = []
+            reach_count = 0
             # Select each Genotype or Individual
 
             for population in range(GA.num_population):
                 print("-------------------")
                 print("Population: {}".format(population))
-                self.trainer.genotype = self.trainer.population[population]
+                self.trainer.genotype = populations[population]
                 fitness = self.__evaluate_genotype()
-                # Save its fitness value
+                np.save("../module/reach_goal{}_{}.npy".format(generation, reach_count), self.trainer.genotype)
+                reach_count += 1
                 current_population.append((self.trainer.genotype, float(fitness)))
-                # print(current_population)
 
             best = GA.get_best_genotype(current_population)
             average = GA.get_average_genotype(current_population)
@@ -249,13 +272,13 @@ class Controller:
 
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
-                self.trainer.population = GA.population_reproduce(current_population)
+                populations = GA.population_reproduce(current_population)
 
         # print("All Genotypes: {}".format(self.genotypes))
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(47, 48):
+        for i in range(20, 34):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
             self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
@@ -291,7 +314,7 @@ class Controller:
         while self.robot.step(self.time_step) != -1:
             self.__read_data()
             self.take_move()
-            fitness += self.trainer.cal_fitness_with_reward([self.velocity_left, self.velocity_right])
+            fitness += self.trainer.cal_fitness_and_reward([self.velocity_left, self.velocity_right])
 
             self.time_count += self.time_step
             if self.state == 4:
@@ -305,32 +328,6 @@ class Controller:
 
         fitness = self.adjust_fitness(fitness)
         self.stop()
-        return fitness
-
-    def __evaluate_genotype(self):
-        self.trainer.update_mlp()
-
-        fitness_per_trial = []
-
-        number_interaction_loops = 1
-        for i in range(number_interaction_loops):
-            # trial: right
-            self.trainer.reset_environment("right")
-            self.trainer.wait_reset_complete()
-            fitness = self.run_robot()
-            fitness_per_trial.append(fitness)
-
-            # trial: left
-            self.trainer.reset_environment("left")
-            self.trainer.wait_reset_complete()
-            fitness = self.run_robot()
-            fitness_per_trial.append(fitness)
-
-        fitness = np.mean(fitness_per_trial)
-        print("Fitness: {}".format(fitness))
-        # current = [generation, genotype, fitness]
-        # self.trainer.genotypes.append(current)
-
         return fitness
 
 
