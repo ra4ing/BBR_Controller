@@ -6,6 +6,7 @@ from trainer import Trainer
 
 class Controller:
     def __init__(self, robot):
+
         self.robot = robot
 
         self.velocity_left = None
@@ -13,6 +14,9 @@ class Controller:
         self.time_count = None
         self.choose_path = None
         self.state = None
+        self.right_count = None
+        self.left_count = None
+
 
         self.__init_parameters()  # Robot Parameters
         self.__init_trainer()  # Initialize MLP
@@ -28,11 +32,13 @@ class Controller:
         self.state = 0
         self.choose_path = 0.5
         self.time_count = 0
+        self.left_count = 0
+        self.right_count = 0
 
     def __init_parameters(self):
         self.time_step = 32  # ms
         self.max_speed = 6.28  # m/s
-        self.max_time = 120.0
+        self.max_time = 100.0
 
         self.state = 0
         self.choose_path = 0.5
@@ -101,7 +107,7 @@ class Controller:
 
     def __read_light_sensors(self):
         self.trainer.inputs.append(self.choose_path)
-        if self.choose_path != 0.5:
+        if self.choose_path != 0:
             return
 
         min_ls = 0
@@ -117,7 +123,7 @@ class Controller:
         if min(lights) < 500:
             self.choose_path = 1
         elif (self.time_count / 1000.0) >= 8.0:
-            self.choose_path = 0
+            self.choose_path = -1
 
     def __read_ground_sensors(self):
         min_gs = 0
@@ -132,11 +138,6 @@ class Controller:
         left = self.adjust_value(left, min_gs, max_gs)
         center = self.adjust_value(center, min_gs, max_gs)
         right = self.adjust_value(right, min_gs, max_gs)
-
-        # # save value for evolutionary
-        # left = self.normalize_value(left, 300, 700)
-        # center = self.normalize_value(center, 300, 700)
-        # right = self.normalize_value(right, 300, 700)
 
         left_normalized = self.normalize_value(left, min_gs, max_gs)
         center_normalized = self.normalize_value(center, min_gs, max_gs)
@@ -202,6 +203,11 @@ class Controller:
         self.velocity_left = output[0] * self.max_speed
         self.velocity_right = output[1] * self.max_speed
 
+        if self.velocity_left > self.velocity_right:
+            self.left_count += 1
+        else:
+            self.right_count += 1
+
         self.left_motor.setVelocity(self.velocity_left)
         self.right_motor.setVelocity(self.velocity_right)
         # self.stop()
@@ -249,19 +255,34 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        self.trainer.genotype = np.load("Best.npy")
+        for i in range(46, 47):
+            print("++++++++++++++++++++++++++++++++++++++++++++++")
+            print("Best {}".format(i))
+            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
+            self.trainer.update_mlp()
 
-        # trial: right
-        self.trainer.reset_environment("right")
-        fitness = self.run_robot()
-        print("Fitness: {}".format(fitness))
+            # trial: right
+            self.trainer.reset_environment("right")
+            fitness = self.run_robot()
+            print("Fitness: {}".format(fitness))
+            print(self.time_count / 1000)
 
-        # trial: left
-        self.trainer.reset_environment("left")
-        fitness = self.run_robot()
-        print("Fitness: {}".format(fitness))
+            # trial: left
+            self.trainer.reset_environment("left")
+            fitness = self.run_robot()
+            print("Fitness: {}".format(fitness))
+            print(self.time_count / 1000)
 
         print("GA demo terminated.\n")
+
+    def adjust_fitness(self, fitness):
+        fitness *= (1 - self.normalize_value(abs(self.left_count - self.right_count), 0, self.max_time / 0.032))
+
+        if self.state == 4:
+            fitness *= 100 * (1 - ((self.time_count / 1000) / self.max_time))
+
+        fitness = (fitness * self.time_step) / self.time_count
+        return fitness
 
     def run_robot(self):
         self.reset()
@@ -274,14 +295,16 @@ class Controller:
 
             self.time_count += self.time_step
             if self.state == 4:
-                print("reach goal!!!")
-                break
+                if (self.time_count / 1000) > 35:
+                    print("reach goal!!!")
+                    break
+                else:
+                    self.state = 0
             elif (self.time_count / 1000) >= self.max_time:
                 break
 
-        fitness = (fitness * self.time_step) / self.time_count
-        if self.state == 4 and (self.time_count / 1000) > 10.0:
-            fitness *= 50 * ((self.time_count / 1000) / self.max_time)
+        fitness = self.adjust_fitness(fitness)
+        self.stop()
         return fitness
 
     def __evaluate_genotype(self):

@@ -125,16 +125,13 @@ class Trainer:
             self.send_command("turn_on_light")
 
     def wait_reset_complete(self):
-        print("waiting...")
-        while self.robot.step(self.time_step) != -1:
-            if self.wait_for_message():
-                return True
+        self.robot.step(self.time_step)
 
     def plt(self, generation, best, average):
         self.send_command(
             "plt " + str(generation) + " " + str(best) + " " + str(average) + " " + str(GA.num_generations))
 
-    def __cal_distance_weight(self, ds, gs):
+    def __cal_distance_weight(self, ds, offline):
         # print("###")
         # print(ds)
         # print(ds[5])
@@ -143,55 +140,51 @@ class Trainer:
         flag_1_6 = 0.145 < ds[1] < 0.35 or 0.145 < ds[6] < 0.35
         flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
 
-        if gs[0] > 0.5 and gs[1] > 0.5 and gs[2] > 0.5:
-            flag = False
+        if offline:
             if flag_0_7:
-                weight = 0.2
-                flag = True
+                weight = 0.1
             if flag_1_6:
                 weight = 0.3
-                flag = True
             if flag_2_5:
                 weight = 10
-                flag = True
-
-            if flag and self.offline_time < 10:
-                self.online_time -= 0.2
-                weight += self.offline_time
+                weight -= self.offline_time
+            if self.offline_time < 10:
+                self.online_time += 0.05
 
         if max(ds) > 0.5:
             weight = 0
 
         return weight
 
-    def __cal_ground_weight(self, gs):
+    def __cal_ground_weight(self, gs, online, offline):
         weight = [(1 - i) for i in gs]
         weight = np.mean(weight)
 
-        if self.online_time < 0.2:
-            self.online_time += 0.001
+        if self.online_time < 0.3:
+            self.online_time += 0.0003
 
-        if gs[0] > 0.5 and gs[1] > 0.5 and gs[2] > 0.5:
+        if offline:
             self.online_time = 0
-            weight = 0.01
+            weight = 0
 
-        if gs[0] < 0.5 or gs[1] < 0.5 or gs[2] < 0.5:
+        if online:
             self.offline_time = 0
 
         return weight + self.online_time
 
     @staticmethod
-    def __cal_light_weight(choose_path, speed, gs):
+    def __cal_light_weight(choose_path, speed, online, offline):
         weight = 0
-        if choose_path == 0:
-            if gs[0] < 0.5 and gs[1] < 0.5 and gs[2] < 0.5 and speed[0] > speed[1]:
+        if choose_path == -1:
+            if online and speed[0] > speed[1]:
                 weight = 0.1
+            elif offline and speed[0] < speed[1]:
+                weight = 0.3
         elif choose_path == 1:
-            if gs[0] < 0.5 and gs[1] < 0.5 and gs[2] < 0.5 and speed[0] < speed[1]:
+            if online and speed[0] < speed[1]:
                 weight = 0.1
-
-        if gs[0] > 0.5 and gs[1] > 0.5 and gs[2] > 0.5:
-            weight = 0
+            elif offline and speed[0] > speed[1]:
+                weight = 0.3
 
         return weight
 
@@ -214,15 +207,18 @@ class Trainer:
         # print("###")
         # print("fitness\tgs\t\tds\tls\tret")
         # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
-        return ret * 10
+        return ret * 5
 
     def cal_fitness_with_reward(self, speed):
 
         fitness = self.__calculate_fitness(speed[0], speed[1])
 
-        light_sensors = self.__cal_light_weight(self.inputs[0], speed, self.inputs[1:4])
-        ground_sensors = self.__cal_ground_weight(self.inputs[1:4])
-        distance_sensors = self.__cal_distance_weight(self.inputs[4:12], self.inputs[1:4])
+        online = self.inputs[1] < 0.5 and self.inputs[2] < 0.5 and self.inputs[3] < 0.5
+        offline = self.inputs[1] > 0.5 and self.inputs[2] > 0.5 and self.inputs[3] > 0.5
+
+        light_sensors = self.__cal_light_weight(self.inputs[0], speed, online, offline)
+        ground_sensors = self.__cal_ground_weight(self.inputs[1:4], online, offline)
+        distance_sensors = self.__cal_distance_weight(self.inputs[4:12], offline)
 
         return self.__combine_fitness_with_reward(fitness, ground_sensors, distance_sensors, light_sensors)
 
@@ -232,7 +228,7 @@ class Trainer:
         avoid_collision_fitness = 1
         spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 6.28)
         # spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
-        combined_fitness = (forward_fitness**0.5) * (avoid_collision_fitness) * (spinning_fitness ** 4)
+        combined_fitness = (forward_fitness) * (avoid_collision_fitness) * (spinning_fitness ** 4)
         # print("###")
         # print(str(forward_fitness) + "\t" + str(avoid_collision_fitness) + "\t" + str(spinning_fitness) + "\t" + str(combined_fitness))
         # self.fitness_values.append(combined_fitness)

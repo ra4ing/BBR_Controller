@@ -114,12 +114,8 @@ class Reset:
 
     def train(self):
         # print("Run Simulation")
-        self.finish_train = False
         while self.supervisor.step(self.time_step) != -1:
             self.handle_receiver()
-            self.send_message("True")
-            if self.finish_train:
-                break
 
 
 if __name__ == '__main__':
@@ -150,4 +146,3 @@ if __name__ == '__main__':
 
     # trainer.send_message("True")
     trainer.train()
-

@@ -196,7 +196,7 @@ class SupervisorGA:
 
     def run_demo(self):
         # Read File
-        genotype = np.load("Best.npy")
+        genotype = np.load("controllers/supervisorGA - ER/Best.npy")
 
         # Turn Left
 
@@ -277,7 +277,7 @@ class SupervisorGA:
             # Save genotype of the best individual
             best = ga.getBestGenotype(current_population);
             average = ga.getAverageGenotype(current_population);
-            np.save("Best.npy", best[0])
+            np.save("controllers/supervisorGA - ER/Best.npy", best[0])
             self.plot_fitness(generation, best[1], average);
 
             # Generate the new population using genetic operators
