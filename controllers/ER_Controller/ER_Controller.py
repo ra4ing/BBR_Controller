@@ -282,7 +282,7 @@ class Controller:
         # for i in range(0, 34):
         print("++++++++++++++++++++++++++++++++++++++++++++++")
         # print("Best {}".format(i))
-        self.trainer.genotype = np.load("../module/reach_goal7_5.npy")
+        self.trainer.genotype = np.load("../pre_module/left.npy")
         self.trainer.update_mlp()
 
         # trial: right
@@ -307,6 +307,7 @@ class Controller:
 
         if self.state == 4 and fitness > 0.01:
             fitness += 0.2
+            fitness -= self.time_count / 1000_000
 
         return fitness
 

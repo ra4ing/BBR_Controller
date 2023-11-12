@@ -176,14 +176,14 @@ class Trainer:
         weight = 0.1
         if choose_path == -1:
             if gs[0] < 0.5 < gs[2]:
-                weight = 1
+                weight = 10
             # if online and speed[0] > speed[1]:
             #     weight = 0.1
             # elif offline and speed[0] < speed[1]:
             #     weight = 0.3
         elif choose_path == 1:
             if gs[0] > 0.5 > gs[2]:
-                weight = 1
+                weight = 10
             # if online and speed[0] < speed[1]:
             #     weight = 0.1
             # elif offline and speed[0] > speed[1]:
