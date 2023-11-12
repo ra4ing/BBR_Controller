@@ -113,8 +113,9 @@ class GA:
         pop_size = (GA.num_population, num_weights)
         # Create the initial population with random weights
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
-        # left = np.load("../../resources/Best46.npy")
+        right = np.load("../pre_module/reach_goal10_1.npy")
         # right = np.load("../../resources/Best47.npy")
+        population[0] = right
         # population[0] = left
         # population[1] = right
         return population

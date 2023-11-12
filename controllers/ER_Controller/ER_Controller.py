@@ -279,23 +279,23 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(0, 34):
-            print("++++++++++++++++++++++++++++++++++++++++++++++")
-            print("Best {}".format(i))
-            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
-            self.trainer.update_mlp()
+        # for i in range(0, 34):
+        print("++++++++++++++++++++++++++++++++++++++++++++++")
+        # print("Best {}".format(i))
+        self.trainer.genotype = np.load("../module/reach_goal7_5.npy")
+        self.trainer.update_mlp()
 
-            # trial: right
-            self.trainer.reset_environment("right")
-            fitness = self.run_robot()
-            print("Fitness: {}".format(fitness))
-            print(self.time_count / 1000)
+        # trial: right
+        self.trainer.reset_environment("right")
+        fitness = self.run_robot()
+        print("Fitness: {}".format(fitness))
+        print(self.time_count / 1000)
 
-            # trial: left
-            self.trainer.reset_environment("left")
-            fitness = self.run_robot()
-            print("Fitness: {}".format(fitness))
-            print(self.time_count / 1000)
+        # trial: left
+        self.trainer.reset_environment("left")
+        fitness = self.run_robot()
+        print("Fitness: {}".format(fitness))
+        print(self.time_count / 1000)
 
         print("GA demo terminated.\n")
 
@@ -305,7 +305,7 @@ class Controller:
 
         fitness /= times
 
-        if self.state == 4:
+        if self.state == 4 and fitness > 0.01:
             fitness += 0.2
 
         return fitness

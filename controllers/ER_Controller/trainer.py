@@ -209,7 +209,7 @@ class Trainer:
         if gs < 0.4:
             gs = 0
         if ds > 1:
-            gs = 0.1
+            gs = 0.01
 
         ret = (fitness) * (ds) * (gs) * (ls)
         # print("###")
