@@ -20,7 +20,7 @@ class Trainer:
 
     def __init_mlp(self):
         self.number_input_layer = 12
-        self.number_hidden_layer = [12, 6]
+        self.number_hidden_layer = [12, 24]
         self.number_output_layer = 2
 
         self.number_neurons_per_layer = []
@@ -71,7 +71,6 @@ class Trainer:
                 weights_part.append(self.genotype[summary:summary + part[n - 1]])
             summary += part[n - 1]
 
-        # weights_part = np.array(weights_part)
         for n in range(1, len(self.number_neurons_per_layer)):
             if n == 1:
                 weights_part[n - 1] = weights_part[n - 1].reshape(
@@ -137,9 +136,9 @@ class Trainer:
 
         if offline:
             if flag_0_7:
-                weight = 0.1
+                weight = -1
             if flag_1_6:
-                weight = 0.3
+                weight = -1
             if flag_2_5:
                 weight = 10
                 weight -= self.offline_time
@@ -169,17 +168,17 @@ class Trainer:
 
     @staticmethod
     def __cal_light_weight(choose_path, gs):
-        weight = 0
+        weight = 0.1
         if choose_path == -1:
-            if gs[0] < 0.5 < gs[2] and gs[1] < 0.5:
-                weight = 0.35
+            if gs[0] < 0.5 < gs[2]:
+                weight = 1
             # if online and speed[0] > speed[1]:
             #     weight = 0.1
             # elif offline and speed[0] < speed[1]:
             #     weight = 0.3
         elif choose_path == 1:
-            if gs[2] < 0.5 < gs[0] and gs[1] < 0.5:
-                weight = 0.35
+            if gs[0] > 0.5 > gs[2]:
+                weight = 1
             # if online and speed[0] < speed[1]:
             #     weight = 0.1
             # elif offline and speed[0] > speed[1]:
@@ -200,13 +199,16 @@ class Trainer:
     def __combine_fitness_with_reward(self, fitness, gs, ds, ls):
         fitness = self.adjust_value(fitness, 0, 1)
         ds = self.adjust_value(ds, 0, 1)
-        gs = self.adjust_value(gs + ls, 0, 1) if gs > 0.4 else 0
+        gs = self.adjust_value(gs, 0, 1)
+        ls = self.adjust_value(ls, 0, 1)
+        if gs < 0.4 or ds == -1:
+            gs = 0
 
-        ret = (fitness) * (ds) * (gs)
+        ret = (fitness) * (ds) * (gs) * (ls)
         # print("###")
         # print("fitness\tgs\t\tds\tls\tret")
         # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
-        return ret * 5
+        return ret * 100
 
     def cal_fitness_and_reward(self, speed):
 
@@ -227,7 +229,7 @@ class Trainer:
         avoid_collision_fitness = 1
         spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 6.28)
         # spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
-        combined_fitness = (forward_fitness) * (avoid_collision_fitness) * (spinning_fitness ** 4)
+        combined_fitness = (forward_fitness**2) * (avoid_collision_fitness) * (spinning_fitness ** 2)
         # print("###")
         # print(str(forward_fitness) + "\t" + str(avoid_collision_fitness) + "\t" + str(spinning_fitness) + "\t" + str(combined_fitness))
         # self.fitness_values.append(combined_fitness)

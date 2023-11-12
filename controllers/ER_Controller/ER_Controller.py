@@ -121,7 +121,7 @@ class Controller:
 
         if min(lights) < 500:
             self.choose_path = 1
-        elif (self.time_count / 1000.0) >= 8.0:
+        elif (self.time_count / 1000.0) >= 5.0:
             self.choose_path = -1
 
     def __read_ground_sensors(self):
@@ -258,7 +258,8 @@ class Controller:
                 print("Population: {}".format(population))
                 self.trainer.genotype = populations[population]
                 fitness = self.__evaluate_genotype()
-                np.save("../module/reach_goal{}_{}.npy".format(generation, reach_count), self.trainer.genotype)
+                if self.state == 4:
+                    np.save("../module/reach_goal{}_{}.npy".format(generation, reach_count), self.trainer.genotype)
                 reach_count += 1
                 current_population.append((self.trainer.genotype, float(fitness)))
 
@@ -278,7 +279,7 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(20, 34):
+        for i in range(0, 34):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
             self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
@@ -299,12 +300,13 @@ class Controller:
         print("GA demo terminated.\n")
 
     def adjust_fitness(self, fitness):
-        fitness *= (1 - self.normalize_value(abs(self.left_count - self.right_count), 0, self.max_time / 0.032))
+        times = self.time_count/self.time_step
+        fitness *= (1 - self.normalize_value(abs(self.left_count-self.right_count), 0, times))
 
         if self.state == 4:
-            fitness *= 100 * (1 - ((self.time_count / 1000) / self.max_time))
+            fitness += 0.2
 
-        fitness = (fitness * self.time_step) / self.time_count
+        fitness /= times
         return fitness
 
     def run_robot(self):
@@ -318,7 +320,7 @@ class Controller:
 
             self.time_count += self.time_step
             if self.state == 4:
-                if (self.time_count / 1000) > 35:
+                if (self.time_count / 1000) > 30:
                     print("reach goal!!!")
                     break
                 else:
