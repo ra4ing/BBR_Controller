@@ -303,10 +303,11 @@ class Controller:
         times = self.time_count/self.time_step
         fitness *= (1 - self.normalize_value(abs(self.left_count-self.right_count), 0, times))
 
+        fitness /= times
+
         if self.state == 4:
             fitness += 0.2
 
-        fitness /= times
         return fitness
 
     def run_robot(self):
