@@ -88,8 +88,10 @@ class Trainer:
         output = self.network.propagate_forward(self.inputs)
         # print("###################")
         # print(output)
-        output[0] = self.normalize_value(output[0], -1, 1) * 6.28
-        output[1] = self.normalize_value(output[1], -1, 1) * 6.28
+        # output[0] = self.normalize_value(output[0], -1, 1) * 6.28
+        # output[1] = self.normalize_value(output[1], -1, 1) * 6.28
+        output[0] = output[0] * 6.28
+        output[1] = output[1] * 6.28
         # print("-------------------")
         # print(output)
 
@@ -134,11 +136,14 @@ class Trainer:
         flag_1_6 = 0.145 < ds[1] < 0.35 or 0.145 < ds[6] < 0.35
         flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
 
-        if offline:
+        if not offline:
+            if flag_0_7 or flag_1_6 or flag_2_5:
+                weight = 1
+        else:
             if flag_0_7:
-                weight = -1
+                weight = 0
             if flag_1_6:
-                weight = -1
+                weight = 0
             if flag_2_5:
                 weight = 10
                 weight -= self.offline_time
@@ -155,7 +160,7 @@ class Trainer:
         weight = np.mean(weight)
 
         if self.online_time < 0.3:
-            self.online_time += 0.0003
+            self.online_time += 0.003
 
         if offline:
             self.online_time = 0
@@ -198,17 +203,19 @@ class Trainer:
 
     def __combine_fitness_with_reward(self, fitness, gs, ds, ls):
         fitness = self.adjust_value(fitness, 0, 1)
-        ds = self.adjust_value(ds, 0, 1)
+        # ds = self.adjust_value(ds, 0, 1)
         gs = self.adjust_value(gs, 0, 1)
         ls = self.adjust_value(ls, 0, 1)
-        if gs < 0.4 or ds == -1:
+        if gs < 0.4:
             gs = 0
+        if ds > 1:
+            gs = 0.1
 
         ret = (fitness) * (ds) * (gs) * (ls)
         # print("###")
         # print("fitness\tgs\t\tds\tls\tret")
         # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
-        return ret * 100
+        return ret * 10
 
     def cal_fitness_and_reward(self, speed):
 
@@ -229,7 +236,7 @@ class Trainer:
         avoid_collision_fitness = 1
         spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 6.28)
         # spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
-        combined_fitness = (forward_fitness**2) * (avoid_collision_fitness) * (spinning_fitness ** 2)
+        combined_fitness = (forward_fitness) * (avoid_collision_fitness) * (spinning_fitness)
         # print("###")
         # print(str(forward_fitness) + "\t" + str(avoid_collision_fitness) + "\t" + str(spinning_fitness) + "\t" + str(combined_fitness))
         # self.fitness_values.append(combined_fitness)

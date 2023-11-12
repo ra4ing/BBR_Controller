@@ -320,8 +320,8 @@ class Controller:
 
             self.time_count += self.time_step
             if self.state == 4:
-                if (self.time_count / 1000) > 30:
-                    print("reach goal!!!")
+                if (self.time_count / 1000) > 35:
+                    print(self.time_count / 1000)
                     break
                 else:
                     self.state = 0
