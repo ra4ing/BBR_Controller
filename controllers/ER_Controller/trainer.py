@@ -93,13 +93,13 @@ class Trainer:
 
     def wait_for_message(self):
         while self.receiver.getQueueLength() > 0:
-            self.wait_message = True
+            # self.wait_message = True
             received_data = self.receiver.getString()
-            if received_data == "True":
-                return True
+            if received_data is not None:
+                return received_data
             self.receiver.nextPacket()
 
-        return False
+        return None
 
     def send_command(self, message):
         message = message.encode("utf-8")
@@ -108,6 +108,7 @@ class Trainer:
     def reset_environment(self, direction):
         self.genotype = np.load("../pre_module/left.npy")
         self.update_mlp()
+
         if direction == "right":
             self.send_command("turn_off_light")
         else:
