@@ -31,7 +31,7 @@ class Controller:
         self.stop()
 
         self.state = 0
-        self.choose_path = 0.5
+        self.choose_path = 0
         self.have_light = False
         self.time_count = 0
         self.left_count = 0
@@ -43,7 +43,7 @@ class Controller:
         self.max_time = 80.0
 
         self.state = 0
-        self.choose_path = 0.5
+        self.choose_path = 0
         self.have_light = False
         self.time_count = 0
         self.left_count = 0
@@ -111,12 +111,9 @@ class Controller:
         return to_min + (scale * to_range)
 
     def __read_light_sensors(self):
-        if self.train_module:
-            self.trainer.inputs.append(self.choose_path)
-        else:
-            self.trainer.inputs.append(0.5)
+        self.trainer.inputs.append(self.choose_path)
 
-        if self.choose_path == 1:
+        if self.choose_path != 0:
             return
 
         min_ls = 0
@@ -130,8 +127,8 @@ class Controller:
             lights.append(temp)
 
         if min(lights) < 500:
-            self.have_light = True
-        if not self.have_light and self.time_count / 1000 > 4.0:
+            self.have_light = -1
+        elif self.time_count / 1000 > 4.0:
             self.choose_path = 1
 
     def __read_ground_sensors(self):
@@ -286,14 +283,26 @@ class Controller:
         # print("All Genotypes: {}".format(self.genotypes))
         print("GA optimization terminated.\n")
 
-    def run_best(self, direction):
+    def run_best(self):
+        # for i in range(0, 34):
+        print("++++++++++++++++++++++++++++++++++++++++++++++")
+        # print("Best {}".format(i))
+        self.trainer.genotype = np.load("../module/reach_goal7_5.npy")
+        self.trainer.update_mlp()
 
         # trial: right
-        self.trainer.reset_environment(direction)
+        self.trainer.reset_environment("right")
         fitness = self.run_robot()
-        self.trainer.reset_environment(direction)
         print("Fitness: {}".format(fitness))
-        print("GA {} terminated.\n".format(direction))
+        print(self.time_count / 1000)
+
+        # trial: left
+        self.trainer.reset_environment("left")
+        fitness = self.run_robot()
+        print("Fitness: {}".format(fitness))
+        print(self.time_count / 1000)
+
+        print("GA demo terminated.\n")
 
     def adjust_fitness(self, fitness):
         times = self.time_count / self.time_step
@@ -314,9 +323,6 @@ class Controller:
         while self.robot.step(self.time_step) != -1:
             self.__read_data()
             self.take_move()
-            if self.train_module and self.choose_path == 1:
-                self.trainer.genotype = np.load("../pre_module/right.npy")
-                self.trainer.update_mlp()
             fitness += self.trainer.cal_fitness_and_reward([self.velocity_left, self.velocity_right])
 
             self.time_count += self.time_step
@@ -337,22 +343,13 @@ class Controller:
 if __name__ == "__main__":
     my_robot = Robot()
     controller = Controller(my_robot)
+    flag = False
+    while controller.robot.step(controller.time_step) != -1 and not controller.trainer.wait_message:
+        flag = controller.trainer.wait_for_message()
 
-    opt = None
-    while controller.robot.step(controller.time_step) != -1:
-        controller.trainer.reset_environment("right")
-        opt = controller.trainer.wait_for_message()
-        print("###", opt)
-        if opt is None:
-            continue
-        if opt == "train":
-            print("++++++++++++++++++++++++++++++++++++++++++++++")
-            controller.train_module = True
-            print("optimization")
-            controller.run_optimization()
-        else:
-            print("++++++++++++++++++++++++++++++++++++++++++++++")
-            controller.train_module = False
-            print("run_{}".format(opt))
-            controller.run_best(opt)
-        opt = None
+    if flag:
+        print("optimization")
+        controller.run_optimization()
+    else:
+        print("run_best")
+        controller.run_best()

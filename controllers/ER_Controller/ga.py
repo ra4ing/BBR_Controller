@@ -114,10 +114,9 @@ class GA:
         # Create the initial population with random weights
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
 
-        right = np.load("../pre_module/right.npy")
-        left = np.load("../pre_module/left.npy")
-        # right = np.load("../../resources/Best47.npy")
-        population[0] = right
-        population[1] = left
-        # population[1] = right
+        # right = np.load("../pre_module/right.npy")
+        # left = np.load("../pre_module/left.npy")
+        # population[0] = right
+        # population[1] = left
+
         return population

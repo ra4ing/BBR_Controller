@@ -93,7 +93,7 @@ class Trainer:
 
     def wait_for_message(self):
         while self.receiver.getQueueLength() > 0:
-            # self.wait_message = True
+            self.wait_message = True
             received_data = self.receiver.getString()
             if received_data is not None:
                 return received_data
@@ -106,9 +106,6 @@ class Trainer:
         self.emitter.send(message)
 
     def reset_environment(self, direction):
-        self.genotype = np.load("../pre_module/left.npy")
-        self.update_mlp()
-
         if direction == "right":
             self.send_command("turn_off_light")
         else:
@@ -139,13 +136,13 @@ class Trainer:
             if flag_1_6:
                 weight = 0
             if flag_2_5:
-                weight = 10
+                weight = 1
                 weight -= self.offline_time
-            if self.offline_time < 10:
+            if self.offline_time < 1:
                 self.online_time += 0.05
 
         if max(ds) > 0.5:
-            weight = 0
+            weight = 0.01
 
         return weight
 
@@ -163,16 +160,22 @@ class Trainer:
         if online:
             self.offline_time = 0
 
+        if weight < 0.4:
+            weight = 0
         return self.adjust_value(weight + self.online_time, 0, 1)
 
     @staticmethod
-    def __cal_light_weight(choose_path, gs):
+    def __cal_light_weight(choose_path, online, offline, speed):
         weight = 0.1
         if choose_path == 1:
-            if gs[0] < 0.5 < gs[2]:
+            if online and speed[0] > speed[1]:
                 weight = 1
-        elif choose_path == 0.5:
-            if gs[0] > 0.5 > gs[2]:
+            if offline and speed[0] < speed[1]:
+                weight = 1
+        elif choose_path == -1:
+            if online and speed[0] < speed[1]:
+                weight = 1
+            if offline and speed[0] > speed[1]:
                 weight = 1
 
         return weight
@@ -188,33 +191,26 @@ class Trainer:
         return val
 
     @staticmethod
-    def __combine_fitness_with_reward(fitness, gs, ds, ls):
-        if gs < 0.4:
-            gs = 0
-        if ds > 1:
-            gs = 0.01
+    def __combine_fitness_with_reward(ff, sf, gs, ds, ls):
 
-        ret = fitness * ds * gs * ls
+        ret = ff * sf * ds * gs * ls
         # print("###")
-        # print("fitness\tgs\t\tds\tls\tret")
-        # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
+        # print("ff\t\t\tsf\t\t\tgs\t\t\tds\t\tls\t\tret")
+        # print(str(ff) + "\t\t" + str(sf) + "\t\t" + str(gs) + "\t\t" + str(ds) + "\t\t" + str(ls) + "\t\t" + str(ret))
         return ret
 
     def cal_fitness_and_reward(self, speed):
-
-        fitness = self.__calculate_fitness(speed[0], speed[1])
-
         online = self.inputs[1] < 0.5 and self.inputs[2] < 0.5 and self.inputs[3] < 0.5
         offline = self.inputs[1] > 0.5 and self.inputs[2] > 0.5 and self.inputs[3] > 0.5
 
-        light_rewards = self.__cal_light_weight(self.inputs[0], self.inputs[1:4])
+        # fitness
+        forward_fitness = self.normalize_value((speed[0] + speed[1]) / 2.0, -6.28, 6.28)
+        spinning_fitness = 1 - self.normalize_value(abs(speed[0] - speed[1]), 0, 12.56)
+
+        # rewards
+        light_rewards = self.__cal_light_weight(self.inputs[0], online, offline, speed)
         ground_rewards = self.__cal_ground_weight(self.inputs[1:4], online, offline)
         distance_rewards = self.__cal_distance_weight(self.inputs[4:12], offline)
 
-        return self.__combine_fitness_with_reward(fitness, ground_rewards, distance_rewards, light_rewards)
-
-    def __calculate_fitness(self, velocity_left, velocity_right):
-        forward_fitness = self.normalize_value((velocity_left + velocity_right) / 2.0, -6.28, 6.28)
-        spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 12.56)
-
-        return forward_fitness * spinning_fitness
+        return self.__combine_fitness_with_reward(forward_fitness, spinning_fitness, ground_rewards, distance_rewards,
+                                                  light_rewards)

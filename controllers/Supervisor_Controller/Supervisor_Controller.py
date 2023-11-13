@@ -148,9 +148,6 @@ class Reset:
         while self.supervisor.step(self.time_step) != -1:
             self.handle_receiver()
 
-    def run_robot(self):
-        self.handle_receiver()
-
 
 if __name__ == '__main__':
     trainer = Reset()
@@ -162,21 +159,16 @@ if __name__ == '__main__':
     # Interface
     print("***************************************************************************************************")
     print("To start the simulation please click anywhere in the SIMULATION WINDOW(3D Window) and press either:")
-    print("(S|s)to Search for New Best Individual OR (R|r) to Run Right Road OR (l|L) to Run Left Road")
+    print("(S|s)to Search for New Best Individual OR (R|r) to Run Best Individual")
     print("***************************************************************************************************")
+
     resp = None
-    while trainer.supervisor.step(trainer.time_step) != -1:
+    print("getting key...")
+    while trainer.supervisor.step(trainer.time_step) != -1 and resp not in [82, 83, 65619]:
         resp = keyboard.getKey()
-        if resp == -1:
-            continue
-        print(resp)
-        if resp == 83 or resp == 65619:
-            trainer.send_message("train")
-            trainer.train()
-        elif resp == 82 or resp == 65619:
-            trainer.send_message("right")
-            trainer.handle_receiver()
-        elif resp == 76 or resp == 65619:
-            trainer.send_message("left")
-            trainer.handle_receiver()
-        resp = None
+
+    if resp == 83 or resp == 65619:
+        trainer.send_message("True")
+    elif resp == 82 or resp == 65619:
+        trainer.send_message("False")
+    trainer.train()
