@@ -86,17 +86,8 @@ class Trainer:
 
     def get_output_and_cal_fitness(self):
         output = self.network.propagate_forward(self.inputs)
-        # print("###################")
-        # print(output)
-        # output[0] = self.normalize_value(output[0], -1, 1) * 6.28
-        # output[1] = self.normalize_value(output[1], -1, 1) * 6.28
         output[0] = output[0] * 6.28
         output[1] = output[1] * 6.28
-        # print("-------------------")
-        # print(output)
-
-        # output[0] = self.adjust_value(output[0], 0, 6.28)
-        # output[1] = self.adjust_value(output[1], 0, 6.28)
 
         return output
 
@@ -131,24 +122,24 @@ class Trainer:
         # print("###")
         # print(ds)
         # print(ds[5])
-        weight = 0.1
+        weight = 0.01
         flag_0_7 = 0.145 < ds[0] < 0.35 or 0.145 < ds[7] < 0.35
         flag_1_6 = 0.145 < ds[1] < 0.35 or 0.145 < ds[6] < 0.35
         flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
 
         if not offline:
             if flag_0_7 or flag_1_6 or flag_2_5:
-                weight = 1
+                weight = 0.1
         else:
             if flag_0_7:
                 weight = 0
             if flag_1_6:
                 weight = 0
             if flag_2_5:
-                weight = 10
+                weight = 1
                 weight -= self.offline_time
-            if self.offline_time < 10:
-                self.online_time += 0.05
+            if self.offline_time < 1:
+                self.online_time += 0.005
 
         if max(ds) > 0.5:
             weight = 0
@@ -177,17 +168,9 @@ class Trainer:
         if choose_path == -1:
             if gs[0] < 0.5 < gs[2]:
                 weight = 1
-            # if online and speed[0] > speed[1]:
-            #     weight = 0.1
-            # elif offline and speed[0] < speed[1]:
-            #     weight = 0.3
         elif choose_path == 1:
             if gs[0] > 0.5 > gs[2]:
                 weight = 1
-            # if online and speed[0] < speed[1]:
-            #     weight = 0.1
-            # elif offline and speed[0] > speed[1]:
-            #     weight = 0.3
 
         return weight
 
@@ -202,16 +185,16 @@ class Trainer:
         return val
 
     def __combine_fitness_with_reward(self, fitness, gs, ds, ls):
-        fitness = self.adjust_value(fitness, 0, 1)
+        # fitness = self.adjust_value(fitness, 0, 1)
         # ds = self.adjust_value(ds, 0, 1)
-        gs = self.adjust_value(gs, 0, 1)
-        ls = self.adjust_value(ls, 0, 1)
+        # gs = self.adjust_value(gs, 0, 1)
+        # ls = self.adjust_value(ls, 0, 1)
         if gs < 0.4:
             gs = 0
         if ds > 1:
             gs = 0.1
 
-        ret = (fitness) * (ds) * (gs) * (ls)
+        ret = fitness * (ds) * (gs) * ls
         # print("###")
         # print("fitness\tgs\t\tds\tls\tret")
         # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
@@ -231,14 +214,7 @@ class Trainer:
         return self.__combine_fitness_with_reward(fitness, ground_rewards, distance_rewards, light_rewards)
 
     def __calculate_fitness(self, velocity_left, velocity_right):
-        forward_fitness = self.normalize_value((velocity_left + velocity_right) / 2.0, 0, 6.28)
-        # avoid_collision_fitness = 1 - self.normalize_value(max(self.inputs[4:12]), 0, 2400)
-        avoid_collision_fitness = 1
-        spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 6.28)
-        # spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
-        combined_fitness = (forward_fitness) * (avoid_collision_fitness) * (spinning_fitness)
-        # print("###")
-        # print(str(forward_fitness) + "\t" + str(avoid_collision_fitness) + "\t" + str(spinning_fitness) + "\t" + str(combined_fitness))
-        # self.fitness_values.append(combined_fitness)
-        # self.fitness = np.mean(self.fitness_values)
-        return combined_fitness
+        forward_fitness = self.normalize_value((velocity_left + velocity_right) / 2.0, -6.28, 6.28)
+        spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 12.56)
+
+        return forward_fitness * spinning_fitness

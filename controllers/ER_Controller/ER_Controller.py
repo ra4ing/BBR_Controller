@@ -37,7 +37,7 @@ class Controller:
     def __init_parameters(self):
         self.time_step = 32  # ms
         self.max_speed = 6.28  # m/s
-        self.max_time = 100.0
+        self.max_time = 90.0
 
         self.state = 0
         self.choose_path = 0.5
@@ -106,7 +106,7 @@ class Controller:
 
     def __read_light_sensors(self):
         self.trainer.inputs.append(self.choose_path)
-        if self.choose_path != 0:
+        if self.choose_path != 0.5:
             return
 
         min_ls = 0
@@ -193,7 +193,6 @@ class Controller:
         self.__read_ground_sensors()
         self.__read_distance_sensors()
         self.__read_camera()
-        # self.trainer.inputs.append(((self.time_count / 1000) / 120.0))
 
     def take_move(self):
         # print(self.state)
@@ -228,11 +227,13 @@ class Controller:
             self.trainer.reset_environment("right")
             self.trainer.wait_reset_complete()
             fitness = self.run_robot()
+            # print("right ", fitness)
             fitness_per_trial.append(fitness)
 
             self.trainer.reset_environment("left")
             self.trainer.wait_reset_complete()
             fitness = self.run_robot()
+            # print("left ", fitness)
             fitness_per_trial.append(fitness)
 
         fitness = np.mean(fitness_per_trial)
@@ -279,23 +280,20 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(0, 34):
-            print("++++++++++++++++++++++++++++++++++++++++++++++")
-            print("Best {}".format(i))
-            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
-            self.trainer.update_mlp()
+        self.trainer.genotype = np.load("../pre_module/left.npy")
+        self.trainer.update_mlp()
 
-            # trial: right
-            self.trainer.reset_environment("right")
-            fitness = self.run_robot()
-            print("Fitness: {}".format(fitness))
-            print(self.time_count / 1000)
+        # trial: right
+        self.trainer.reset_environment("right")
+        fitness = self.run_robot()
+        print("Fitness: {}".format(fitness))
+        print("left: ", self.time_count / 1000)
 
-            # trial: left
-            self.trainer.reset_environment("left")
-            fitness = self.run_robot()
-            print("Fitness: {}".format(fitness))
-            print(self.time_count / 1000)
+        # trial: left
+        self.trainer.reset_environment("left")
+        fitness = self.run_robot()
+        print("Fitness: {}".format(fitness))
+        print("left: ", self.time_count / 1000)
 
         print("GA demo terminated.\n")
 
@@ -307,6 +305,7 @@ class Controller:
 
         if self.state == 4:
             fitness += 0.2
+            fitness -= self.time_count/1000_000
 
         return fitness
 
@@ -321,7 +320,7 @@ class Controller:
 
             self.time_count += self.time_step
             if self.state == 4:
-                if (self.time_count / 1000) > 35:
+                if (self.time_count / 1000) > 30:
                     print(self.time_count / 1000)
                     break
                 else:
