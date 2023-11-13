@@ -169,25 +169,17 @@ class Trainer:
         if online:
             self.offline_time = 0
 
-        return weight + self.online_time
+        return self.adjust_value(weight + self.online_time, 0, 1)
 
     @staticmethod
     def __cal_light_weight(choose_path, gs):
         weight = 0.1
-        if choose_path == -1:
+        if choose_path == 1:
             if gs[0] < 0.5 < gs[2]:
-                weight = 10
-            # if online and speed[0] > speed[1]:
-            #     weight = 0.1
-            # elif offline and speed[0] < speed[1]:
-            #     weight = 0.3
-        elif choose_path == 1:
+                weight = 1
+        elif choose_path == 0.5:
             if gs[0] > 0.5 > gs[2]:
-                weight = 10
-            # if online and speed[0] < speed[1]:
-            #     weight = 0.1
-            # elif offline and speed[0] > speed[1]:
-            #     weight = 0.3
+                weight = 1
 
         return weight
 
@@ -201,21 +193,18 @@ class Trainer:
         val = min(val, max_val)
         return val
 
-    def __combine_fitness_with_reward(self, fitness, gs, ds, ls):
-        fitness = self.adjust_value(fitness, 0, 1)
-        # ds = self.adjust_value(ds, 0, 1)
-        gs = self.adjust_value(gs, 0, 1)
-        ls = self.adjust_value(ls, 0, 1)
+    @staticmethod
+    def __combine_fitness_with_reward(fitness, gs, ds, ls):
         if gs < 0.4:
             gs = 0
         if ds > 1:
             gs = 0.01
 
-        ret = (fitness) * (ds) * (gs) * (ls)
+        ret = fitness * ds * gs * ls
         # print("###")
         # print("fitness\tgs\t\tds\tls\tret")
         # print(str(fitness) + "\t" + str(gs) + "\t" + str(ds) + "\t" + str(ls) + "\t" + str(ret))
-        return ret * 10
+        return ret
 
     def cal_fitness_and_reward(self, speed):
 
@@ -231,14 +220,7 @@ class Trainer:
         return self.__combine_fitness_with_reward(fitness, ground_rewards, distance_rewards, light_rewards)
 
     def __calculate_fitness(self, velocity_left, velocity_right):
-        forward_fitness = self.normalize_value((velocity_left + velocity_right) / 2.0, 0, 6.28)
-        # avoid_collision_fitness = 1 - self.normalize_value(max(self.inputs[4:12]), 0, 2400)
-        avoid_collision_fitness = 1
-        spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 6.28)
-        # spinning_fitness = 1 - (abs(velocity_left - velocity_right) ** 0.5)
-        combined_fitness = (forward_fitness) * (avoid_collision_fitness) * (spinning_fitness)
-        # print("###")
-        # print(str(forward_fitness) + "\t" + str(avoid_collision_fitness) + "\t" + str(spinning_fitness) + "\t" + str(combined_fitness))
-        # self.fitness_values.append(combined_fitness)
-        # self.fitness = np.mean(self.fitness_values)
-        return combined_fitness
+        forward_fitness = self.normalize_value((velocity_left + velocity_right) / 2.0, -6.28, 6.28)
+        spinning_fitness = 1 - self.normalize_value(abs(velocity_left - velocity_right), 0, 12.56)
+
+        return forward_fitness * spinning_fitness

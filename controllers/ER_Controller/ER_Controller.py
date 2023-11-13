@@ -13,6 +13,7 @@ class Controller:
         self.velocity_right = None
         self.time_count = None
         self.choose_path = None
+        self.have_light = None
         self.state = None
         self.right_count = None
         self.left_count = None
@@ -30,6 +31,7 @@ class Controller:
 
         self.state = 0
         self.choose_path = 0.5
+        self.have_light = False
         self.time_count = 0
         self.left_count = 0
         self.right_count = 0
@@ -41,7 +43,10 @@ class Controller:
 
         self.state = 0
         self.choose_path = 0.5
+        self.have_light = False
         self.time_count = 0
+        self.left_count = 0
+        self.right_count = 0
 
     def __init_trainer(self):
         self.trainer = Trainer(self.robot)
@@ -106,7 +111,7 @@ class Controller:
 
     def __read_light_sensors(self):
         self.trainer.inputs.append(self.choose_path)
-        if self.choose_path != 0:
+        if self.choose_path == 1:
             return
 
         min_ls = 0
@@ -120,9 +125,10 @@ class Controller:
             lights.append(temp)
 
         if min(lights) < 500:
+            self.have_light = True
+        if not self.have_light and self.time_count/1000 > 3.0:
             self.choose_path = 1
-        elif (self.time_count / 1000.0) >= 5.0:
-            self.choose_path = -1
+
 
     def __read_ground_sensors(self):
         min_gs = 0
