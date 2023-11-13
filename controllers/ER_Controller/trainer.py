@@ -86,17 +86,8 @@ class Trainer:
 
     def get_output_and_cal_fitness(self):
         output = self.network.propagate_forward(self.inputs)
-        # print("###################")
-        # print(output)
-        # output[0] = self.normalize_value(output[0], -1, 1) * 6.28
-        # output[1] = self.normalize_value(output[1], -1, 1) * 6.28
         output[0] = output[0] * 6.28
         output[1] = output[1] * 6.28
-        # print("-------------------")
-        # print(output)
-
-        # output[0] = self.adjust_value(output[0], 0, 6.28)
-        # output[1] = self.adjust_value(output[1], 0, 6.28)
 
         return output
 
@@ -115,6 +106,8 @@ class Trainer:
         self.emitter.send(message)
 
     def reset_environment(self, direction):
+        self.genotype = np.load("../pre_module/left.npy")
+        self.update_mlp()
         if direction == "right":
             self.send_command("turn_off_light")
         else:

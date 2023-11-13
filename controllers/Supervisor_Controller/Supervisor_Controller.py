@@ -163,17 +163,17 @@ if __name__ == '__main__':
     print("***************************************************************************************************")
 
     resp = None
+    print("(S|s)to Search for New Best Individual OR (R|r) to Run Right Road OR (l|L) to Run Left Road")
     print("getting key...")
-    while trainer.supervisor.step(trainer.time_step) != -1 and resp not in [82, 83, 65619]:
+    while trainer.supervisor.step(trainer.time_step) != -1 and resp not in [82, 83, 76, 65619]:
         resp = keyboard.getKey()
 
     if resp == 83 or resp == 65619:
         trainer.send_message("True")
         print("(S|s)to Search for New Best Individual OR (R|r) to Run Best Individual")
-        # print("(R|r)un Best Individual or (S|s)earch for New Best Individual:")
     elif resp == 82 or resp == 65619:
-        trainer.send_message("False")
-        print("(S|s)to Search for New Best Individual OR (R|r) to Run Best Individual")
+        trainer.send_message("right")
+    elif resp == 76 or resp == 65619:
+        trainer.send_message("left")
 
-    # trainer.send_message("True")
     trainer.train()

@@ -39,7 +39,7 @@ class Controller:
     def __init_parameters(self):
         self.time_step = 32  # ms
         self.max_speed = 6.28  # m/s
-        self.max_time = 100.0
+        self.max_time = 80.0
 
         self.state = 0
         self.choose_path = 0.5
@@ -110,7 +110,7 @@ class Controller:
         return to_min + (scale * to_range)
 
     def __read_light_sensors(self):
-        self.trainer.inputs.append(self.choose_path)
+        self.trainer.inputs.append(0.5)
         if self.choose_path == 1:
             return
 
@@ -126,9 +126,8 @@ class Controller:
 
         if min(lights) < 500:
             self.have_light = True
-        if not self.have_light and self.time_count/1000 > 3.0:
+        if not self.have_light and self.time_count / 1000 > 4.0:
             self.choose_path = 1
-
 
     def __read_ground_sensors(self):
         min_gs = 0
@@ -199,7 +198,6 @@ class Controller:
         self.__read_ground_sensors()
         self.__read_distance_sensors()
         self.__read_camera()
-        # self.trainer.inputs.append(((self.time_count / 1000) / 120.0))
 
     def take_move(self):
         # print(self.state)
@@ -230,7 +228,6 @@ class Controller:
 
         number_interaction_loops = 1
         for i in range(number_interaction_loops):
-
             self.trainer.reset_environment("right")
             self.trainer.wait_reset_complete()
             fitness = self.run_robot()
@@ -285,34 +282,30 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        # for i in range(0, 34):
         print("++++++++++++++++++++++++++++++++++++++++++++++")
-        # print("Best {}".format(i))
-        self.trainer.genotype = np.load("../pre_module/left.npy")
-        self.trainer.update_mlp()
 
         # trial: right
         self.trainer.reset_environment("right")
         fitness = self.run_robot()
         print("Fitness: {}".format(fitness))
-        print(self.time_count / 1000)
+        # print(self.time_count / 1000)
 
         # trial: left
         self.trainer.reset_environment("left")
         fitness = self.run_robot()
         print("Fitness: {}".format(fitness))
-        print(self.time_count / 1000)
+        # print(self.time_count / 1000)
 
         print("GA demo terminated.\n")
 
     def adjust_fitness(self, fitness):
-        times = self.time_count/self.time_step
-        fitness *= (1 - self.normalize_value(abs(self.left_count-self.right_count), 0, times))
+        times = self.time_count / self.time_step
+        fitness *= (1 - self.normalize_value(abs(self.left_count - self.right_count), 0, times))
 
         fitness /= times
 
-        if self.state == 4 and fitness > 0.01:
-            fitness += 0.2
+        if self.state == 4:
+            fitness += 0.3
             fitness -= self.time_count / 1000_000
 
         return fitness
@@ -324,11 +317,15 @@ class Controller:
         while self.robot.step(self.time_step) != -1:
             self.__read_data()
             self.take_move()
+            if self.choose_path == 1:
+                self.trainer.genotype = np.load("../pre_module/right.npy")
+                self.trainer.update_mlp()
+
             fitness += self.trainer.cal_fitness_and_reward([self.velocity_left, self.velocity_right])
 
             self.time_count += self.time_step
             if self.state == 4:
-                if (self.time_count / 1000) > 35:
+                if (self.time_count / 1000) > 30:
                     print(self.time_count / 1000)
                     break
                 else:

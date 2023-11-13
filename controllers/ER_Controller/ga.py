@@ -7,10 +7,10 @@ import numpy as np
 class GA:
     # DEFINE here the 3 GA Parameters:
     num_generations = 200
-    num_population = 10
-    num_elite = 5
+    num_population = 50
+    num_elite = 25
     cp = 100
-    mp = 25
+    mp = 45
 
     @staticmethod
     def population_reproduce(genotypes):
