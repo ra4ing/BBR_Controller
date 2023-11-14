@@ -1,5 +1,5 @@
 import numpy as np
-from controller import Robot, keyboard
+from controller import Robot
 from ga import GA
 from trainer import Trainer
 
@@ -13,7 +13,6 @@ class Controller:
         self.velocity_right = None
         self.time_count = None
         self.choose_path = None
-        self.have_light = None
         self.state = None
         self.right_count = None
         self.left_count = None
@@ -32,7 +31,6 @@ class Controller:
 
         self.state = 0
         self.choose_path = 0
-        self.have_light = False
         self.time_count = 0
         self.left_count = 0
         self.right_count = 0
@@ -40,11 +38,10 @@ class Controller:
     def __init_parameters(self):
         self.time_step = 32  # ms
         self.max_speed = 6.28  # m/s
-        self.max_time = 80.0
+        self.max_time = 90.0
 
         self.state = 0
         self.choose_path = 0
-        self.have_light = False
         self.time_count = 0
         self.left_count = 0
         self.right_count = 0
@@ -112,6 +109,7 @@ class Controller:
 
     def __read_light_sensors(self):
         self.trainer.inputs.append(self.choose_path)
+        self.trainer.inputs.append(self.choose_path)
 
         if self.choose_path != 0:
             return
@@ -127,9 +125,9 @@ class Controller:
             lights.append(temp)
 
         if min(lights) < 500:
-            self.have_light = -1
+            self.choose_path = -0.5
         elif self.time_count / 1000 > 4.0:
-            self.choose_path = 1
+            self.choose_path = 0.5
 
     def __read_ground_sensors(self):
         min_gs = 0
@@ -196,9 +194,9 @@ class Controller:
 
     def __read_data(self):
         self.trainer.inputs = []
-        self.__read_light_sensors()
         self.__read_ground_sensors()
         self.__read_distance_sensors()
+        self.__read_light_sensors()
         self.__read_camera()
 
     def take_move(self):
@@ -274,7 +272,7 @@ class Controller:
             print("Best: {}".format(best[1]))
             print("Average: {}".format(average))
             np.save("../module/Best{}.npy".format(generation), best[0])
-            self.trainer.plt(generation, best[1], average)
+            self.trainer.plt(generation, self.normalize_value(best[1], -20, 20), self.normalize_value(average, -20, 20))
 
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
@@ -306,13 +304,11 @@ class Controller:
 
     def adjust_fitness(self, fitness):
         times = self.time_count / self.time_step
-        fitness *= (1 - self.normalize_value(abs(self.left_count - self.right_count), 0, times))
-
         fitness /= times
 
         if self.state == 4:
-            fitness += 0.3
-            fitness -= self.time_count / 1000_000
+            fitness += self.max_speed
+            fitness -= self.time_count / 100
 
         return fitness
 
