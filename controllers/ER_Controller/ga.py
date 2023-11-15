@@ -7,10 +7,10 @@ import numpy as np
 class GA:
     # DEFINE here the 3 GA Parameters:
     num_generations = 200
-    num_population = 50
-    num_elite = 20
-    cp = 100
-    mp = 35
+    num_population = 100
+    num_elite = 50
+    cp = 90
+    mp = 25
 
     @staticmethod
     def population_reproduce(genotypes):
@@ -114,9 +114,6 @@ class GA:
         # Create the initial population with random weights
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
 
-        # right = np.load("../pre_module/right.npy")
-        # left = np.load("../pre_module/left.npy")
-        # population[0] = right
-        # population[1] = left
-
+        # state0_0 = np.load("../pre_module/right_reach.npy")
+        # population[0] = state0_0
         return population

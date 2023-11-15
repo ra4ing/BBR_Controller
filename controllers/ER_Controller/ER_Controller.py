@@ -261,8 +261,6 @@ class Controller:
                 print("Population: {}".format(population))
                 self.trainer.genotype = populations[population]
                 fitness = self.__evaluate_genotype()
-                if self.state == 4:
-                    np.save("../module/reach_goal{}_{}.npy".format(generation, reach_count), self.trainer.genotype)
                 reach_count += 1
                 current_population.append((self.trainer.genotype, float(fitness)))
 
@@ -271,8 +269,9 @@ class Controller:
             print("-------------------")
             print("Best: {}".format(best[1]))
             print("Average: {}".format(average))
-            np.save("../module/Best{}.npy".format(generation), best[0])
-            self.trainer.plt(generation, self.normalize_value(best[1], -2, 2), self.normalize_value(average, -2, 2))
+            for idx in range(GA.num_elite):
+                np.save("../module/Best{}.npy".format(idx), current_population[idx][0])
+            self.trainer.plt(generation, self.normalize_value(best[1], 0, 10), self.normalize_value(average, 0, 10))
 
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
@@ -282,23 +281,23 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        # for i in range(0, 34):
-        print("++++++++++++++++++++++++++++++++++++++++++++++")
-        # print("Best {}".format(i))
-        self.trainer.genotype = np.load("../module/reach_goal7_5.npy")
-        self.trainer.update_mlp()
+        for i in range(0, 10):
+            print("++++++++++++++++++++++++++++++++++++++++++++++")
+            print("Best {}".format(i))
+            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
+            self.trainer.update_mlp()
 
-        # trial: right
-        self.trainer.reset_environment("right")
-        fitness = self.run_robot()
-        print("Fitness: {}".format(fitness))
-        print(self.time_count / 1000)
+            # trial: right
+            self.trainer.reset_environment("right")
+            fitness = self.run_robot()
+            print("Fitness: {}".format(fitness))
+            print(self.time_count / 1000)
 
-        # trial: left
-        self.trainer.reset_environment("left")
-        fitness = self.run_robot()
-        print("Fitness: {}".format(fitness))
-        print(self.time_count / 1000)
+            # trial: left
+            self.trainer.reset_environment("left")
+            fitness = self.run_robot()
+            print("Fitness: {}".format(fitness))
+            print(self.time_count / 1000)
 
         print("GA demo terminated.\n")
 
@@ -306,9 +305,9 @@ class Controller:
         times = self.time_count / self.time_step
         fitness /= times
 
-        if self.state == 4:
-            fitness += 0.3
-            fitness -= self.time_count / 1000_000
+        # if self.state == 4:
+        #     fitness += 0.3
+        #     fitness -= self.time_count / 1000_000
 
         return fitness
 
@@ -343,7 +342,7 @@ if __name__ == "__main__":
     while controller.robot.step(controller.time_step) != -1 and not controller.trainer.wait_message:
         flag = controller.trainer.wait_for_message()
 
-    if flag:
+    if flag == "True":
         print("optimization")
         controller.run_optimization()
     else:

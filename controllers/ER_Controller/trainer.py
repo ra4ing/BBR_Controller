@@ -20,7 +20,7 @@ class Trainer:
 
     def __init_mlp(self):
         self.number_input_layer = 12
-        self.number_hidden_layer = [12, 12]
+        self.number_hidden_layer = [12, 10]
         self.number_output_layer = 2
 
         self.number_neurons_per_layer = []
@@ -118,79 +118,43 @@ class Trainer:
         self.send_command(
             "plt " + str(generation) + " " + str(best) + " " + str(average) + " " + str(GA.num_generations))
 
-    def __cal_distance_weight(self, ds, offline):
-        # print("###")
-        # print(ds)
-        # print(ds[5])
+    @staticmethod
+    def __cal_distance_weight(ds):
         weight = 0.1
         flag_0_7 = 0.145 < ds[0] < 0.35 or 0.145 < ds[7] < 0.35
         flag_1_6 = 0.145 < ds[1] < 0.35 or 0.145 < ds[6] < 0.35
         flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
 
-        if offline:
-            if flag_0_7 or flag_1_6:
-                weight = 1
-            if flag_2_5:
-                weight = 10
+        if flag_0_7 or flag_1_6:
+            weight = 1
+        if flag_2_5:
+            weight = 100
 
-        if max(ds) > 0.5:
-            weight = 0
-        return weight
-
-    def __cal_ground_weight(self, gs, ls, speed):
-        # weight = np.mean([(1 - i) for i in gs])
-
-        weight = 0.1
-        flag_0 = gs[0] < 0.5
-        flag_1 = gs[1] < 0.5
-        flag_2 = gs[2] < 0.5
-
-        offline = not flag_0 and not flag_1 and not flag_2
-        if offline:
-            weight = 0.01
-
-        # 右路：左中在线上右在线外加分
-        if ls > 0:
-            if flag_0 and flag_1 and not flag_2:
-                # if speed[0] == speed[1]:
-                weight = 10
-        # 左路：右中在线上左在线外加分
-        elif ls < 0:
-            if flag_1 and flag_2 and not flag_0:
-                # if speed[0] == speed[1]:
-                weight = 10
-        # 都在线上加分
-        if flag_0 and flag_1 and flag_2:
-            if speed[0] == speed[1]:
-                weight = 1
-        # 只有左在线上左转加分
-        if flag_0 and not flag_1 and not flag_2:
-            if speed[0] < speed[1]:
-                weight = 1
-        # 只有右在线上右转加分
-        if flag_2 and not flag_0 and not flag_1:
-            if speed[0] > speed[1]:
-                weight = 1
-
-        # if offline:
-        #     weight = 0.1
-        # else:
-        #     if self.online_time < 0.5:
-        #         weight += self.online_time
-        #         self.online_time += 0.01
-
-        # return self.adjust_value(weight + self.online_time, 0, 1)
         return weight
 
     @staticmethod
-    def __cal_light_weight(choose_path, online, offline, speed):
+    def __cal_ground_weight(gs, ls):
+        # weight = np.mean([(1 - i) for i in gs])
+
         weight = 0.1
-        if choose_path > 0:
-            if offline and speed[0] < speed[1]:
-                weight = 1
-        elif choose_path < 0:
-            if offline and speed[0] > speed[1]:
-                weight = 1
+        left = gs[0] < 0.5
+        center = gs[1] < 0.5
+        right = gs[2] < 0.5
+
+        offline = not left and not center and not right
+        # online = left and center and right
+
+        if offline:
+            weight = 0.01
+        else:
+            weight = 1
+
+        if ls > 0:
+            if left and not right:
+                weight = 200
+        elif ls < 0:
+            if right and not left:
+                weight = 200
 
         return weight
 
@@ -207,33 +171,27 @@ class Trainer:
     @staticmethod
     def __combine_fitness_with_reward(ff, af, sf, gr, dr):
 
-        ret = ff * (af**2) * (sf**2) * gr * dr # * ls  # * ds
-        # if ret == 0:
-        #     print("###")
-        #     print("ff\t\t\tsf\t\t\tgs\t\t\tds\t\t\tls\t\t\tret")
-        #     print(str(ff) + "\t\t" + str(sf*5) + "\t\t" + str(gs*10) + "\t\t" + str(ds*3) + "\t\t" + str(ls*10) + "\t\t" + str(ret))
+        if ff < 0.75 or af < 0.5 or sf < 0.85:
+            return 0
+
+        ret = gr  # * dr
+        # print("###")
+        # print("ff\t\t\tsf\t\t\tgs\t\t\tds\t\t\tls\t\t\tret")
+        # print(str(ff) + "\t\t" + str(sf*5) + "\t\t" + str(gs*10) + "\t\t"
+        # + str(ds*3) + "\t\t" + str(ls*10) + "\t\t" + str(ret))
         return ret
 
     def cal_fitness_and_reward(self, speed):
-        if min(speed) < 0 or (speed[0] + speed[1]) / 2 <= 2.0:
-            return 0
-
-        # online = self.inputs[0] < 0.5 and self.inputs[1] < 0.5 and self.inputs[2] < 0.5
-        offline = self.inputs[0] > 0.5 and self.inputs[1] > 0.5 and self.inputs[2] > 0.5
-
-        # if not offline:
-        #     self.offline_time = 0
-        # if not online:
-        #     self.online_time = 0
-
         # fitness
         forward_fitness = self.normalize_value((speed[0] + speed[1]) / 2.0, -6.28, 6.28)
         avoid_collision_fitness = 1 - max(self.inputs[3:11])
         spinning_fitness = 1 - self.normalize_value(abs(speed[0] - speed[1]), 0, 12.56)
 
         # rewards
-        ground_rewards = self.__cal_ground_weight(self.inputs[0:3], self.inputs[11], speed)
-        distance_rewards = self.__cal_distance_weight(self.inputs[3:11], offline)
+        ground_rewards = self.__cal_ground_weight(self.inputs[0:3], self.inputs[11])
+        distance_rewards = self.__cal_distance_weight(self.inputs[3:11])
 
         return self.__combine_fitness_with_reward(forward_fitness, avoid_collision_fitness, spinning_fitness,
                                                   ground_rewards, distance_rewards)
+
+# 右 7 17
