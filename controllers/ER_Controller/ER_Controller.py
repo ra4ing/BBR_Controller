@@ -109,7 +109,6 @@ class Controller:
 
     def __read_light_sensors(self):
         self.trainer.inputs.append(self.choose_path)
-        self.trainer.inputs.append(self.choose_path)
 
         if self.choose_path != 0:
             return
@@ -126,7 +125,7 @@ class Controller:
 
         if min(lights) < 500:
             self.choose_path = -0.5
-        elif self.time_count / 1000 > 4.0:
+        elif self.time_count / 1000 > 5.0:
             self.choose_path = 0.5
 
     def __read_ground_sensors(self):
@@ -163,6 +162,7 @@ class Controller:
 
             temp_normalized = self.normalize_value(temp, min_ds, max_ds)  # save value for evolutionary
             temp_normalized = temp_normalized * 5
+            temp_normalized = self.adjust_value(temp_normalized, 0, 1)
             self.trainer.inputs.append(temp_normalized)
 
     def __read_camera(self):
@@ -272,7 +272,7 @@ class Controller:
             print("Best: {}".format(best[1]))
             print("Average: {}".format(average))
             np.save("../module/Best{}.npy".format(generation), best[0])
-            self.trainer.plt(generation, self.normalize_value(best[1], -20, 20), self.normalize_value(average, -20, 20))
+            self.trainer.plt(generation, self.normalize_value(best[1], -50, 50), self.normalize_value(average, -50, 50))
 
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
@@ -307,8 +307,8 @@ class Controller:
         fitness /= times
 
         if self.state == 4:
-            fitness += self.max_speed
-            fitness -= self.time_count / 100
+            fitness += 0.3
+            fitness -= self.time_count / 1000_000
 
         return fitness
 
