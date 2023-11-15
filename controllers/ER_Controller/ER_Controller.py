@@ -272,7 +272,7 @@ class Controller:
             print("Best: {}".format(best[1]))
             print("Average: {}".format(average))
             np.save("../module/Best{}.npy".format(generation), best[0])
-            self.trainer.plt(generation, self.normalize_value(best[1], -50, 50), self.normalize_value(average, -50, 50))
+            self.trainer.plt(generation, self.normalize_value(best[1], -2, 2), self.normalize_value(average, -2, 2))
 
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:

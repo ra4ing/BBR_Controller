@@ -128,22 +128,17 @@ class Trainer:
         flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
 
         if offline:
-            if self.offline_time < 1:
-                self.offline_time += 0.05
             if flag_0_7 or flag_1_6:
-                weight = 0.3
+                weight = 1
             if flag_2_5:
-                weight = 1 - self.offline_time
+                weight = 10
 
         if max(ds) > 0.5:
-            weight = 0.1
-
+            weight = 0
         return weight
 
     def __cal_ground_weight(self, gs, ls, speed):
         # weight = np.mean([(1 - i) for i in gs])
-        if (speed[0] + speed[1]) / 2 <= 2.0:
-            return 0.1
 
         weight = 0.1
         flag_0 = gs[0] < 0.5
@@ -158,12 +153,12 @@ class Trainer:
         if ls > 0:
             if flag_0 and flag_1 and not flag_2:
                 # if speed[0] == speed[1]:
-                weight = 2
+                weight = 10
         # 左路：右中在线上左在线外加分
         elif ls < 0:
             if flag_1 and flag_2 and not flag_0:
                 # if speed[0] == speed[1]:
-                weight = 2
+                weight = 10
         # 都在线上加分
         if flag_0 and flag_1 and flag_2:
             if speed[0] == speed[1]:
@@ -210,9 +205,9 @@ class Trainer:
         return val
 
     @staticmethod
-    def __combine_fitness_with_reward(ff, af, sf, gr, dr, lr):
+    def __combine_fitness_with_reward(ff, af, sf, gr, dr):
 
-        ret = ff * (af**2) * sf * (gr ** 2)  # * ls  # * ds
+        ret = ff * (af**2) * (sf**2) * gr * dr # * ls  # * ds
         # if ret == 0:
         #     print("###")
         #     print("ff\t\t\tsf\t\t\tgs\t\t\tds\t\t\tls\t\t\tret")
@@ -220,7 +215,10 @@ class Trainer:
         return ret
 
     def cal_fitness_and_reward(self, speed):
-        online = self.inputs[0] < 0.5 and self.inputs[1] < 0.5 and self.inputs[2] < 0.5
+        if min(speed) < 0 or (speed[0] + speed[1]) / 2 <= 2.0:
+            return 0
+
+        # online = self.inputs[0] < 0.5 and self.inputs[1] < 0.5 and self.inputs[2] < 0.5
         offline = self.inputs[0] > 0.5 and self.inputs[1] > 0.5 and self.inputs[2] > 0.5
 
         # if not offline:
@@ -234,9 +232,8 @@ class Trainer:
         spinning_fitness = 1 - self.normalize_value(abs(speed[0] - speed[1]), 0, 12.56)
 
         # rewards
-        light_rewards = self.__cal_light_weight(self.inputs[11], online, offline, speed)
         ground_rewards = self.__cal_ground_weight(self.inputs[0:3], self.inputs[11], speed)
         distance_rewards = self.__cal_distance_weight(self.inputs[3:11], offline)
 
         return self.__combine_fitness_with_reward(forward_fitness, avoid_collision_fitness, spinning_fitness,
-                                                  ground_rewards, distance_rewards, light_rewards)
+                                                  ground_rewards, distance_rewards)
