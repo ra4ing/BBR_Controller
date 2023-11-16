@@ -270,7 +270,7 @@ class Controller:
             print("Best: {}".format(best[1]))
             print("Average: {}".format(average))
             for idx in range(GA.num_elite):
-                np.save("../module/Best{}.npy".format(idx), current_population[idx][0])
+                np.save("../module/Best{}.npy".format(idx), populations[idx])
             self.trainer.plt(generation, self.normalize_value(best[1], 0, 10), self.normalize_value(average, 0, 10))
 
             # Generate the new population_idx using genetic operators
@@ -281,10 +281,10 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(0, 10):
+        for i in range(0, 1):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
-            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
+            self.trainer.genotype = np.load("../pre_module/right_reach.npy")
             self.trainer.update_mlp()
 
             # trial: right

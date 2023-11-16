@@ -126,9 +126,9 @@ class Trainer:
         flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
 
         if flag_0_7 or flag_1_6:
-            weight = 1
-        if flag_2_5:
             weight = 100
+        if flag_2_5:
+            weight = 1000
 
         return weight
 
@@ -136,7 +136,6 @@ class Trainer:
     def __cal_ground_weight(gs, ls):
         # weight = np.mean([(1 - i) for i in gs])
 
-        weight = 0.1
         left = gs[0] < 0.5
         center = gs[1] < 0.5
         right = gs[2] < 0.5
@@ -151,10 +150,10 @@ class Trainer:
 
         if ls > 0:
             if left and not right:
-                weight = 200
+                weight = 10
         elif ls < 0:
             if right and not left:
-                weight = 200
+                weight = 10
 
         return weight
 
@@ -174,11 +173,10 @@ class Trainer:
         if ff < 0.75 or af < 0.5 or sf < 0.85:
             return 0
 
-        ret = gr  # * dr
-        # print("###")
-        # print("ff\t\t\tsf\t\t\tgs\t\t\tds\t\t\tls\t\t\tret")
-        # print(str(ff) + "\t\t" + str(sf*5) + "\t\t" + str(gs*10) + "\t\t"
-        # + str(ds*3) + "\t\t" + str(ls*10) + "\t\t" + str(ret))
+        ret = gr
+        print("###")
+        print("ff\t\t\tsf\t\t\tgs\t\t\tdr")
+        print(str(ff) + "\t\t" + str(sf) + "\t\t" + str(gr) + "\t\t" + str(dr))
         return ret
 
     def cal_fitness_and_reward(self, speed):

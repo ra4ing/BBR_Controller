@@ -7,9 +7,9 @@ import numpy as np
 class GA:
     # DEFINE here the 3 GA Parameters:
     num_generations = 200
-    num_population = 100
-    num_elite = 50
-    cp = 90
+    num_population = 80
+    num_elite = 40
+    cp = 100
     mp = 25
 
     @staticmethod
@@ -114,6 +114,10 @@ class GA:
         # Create the initial population with random weights
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
 
-        # state0_0 = np.load("../pre_module/right_reach.npy")
-        # population[0] = state0_0
+        state0_0 = np.load("../pre_module/state0_0.npy")
+        state0_1 = np.load("../pre_module/state0_1.npy")
+        reach_goal = np.load("../pre_module/right_reach.npy")
+        population[0] = state0_0
+        population[1] = state0_1
+        population[2] = reach_goal
         return population
