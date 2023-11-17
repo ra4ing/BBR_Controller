@@ -30,7 +30,7 @@ class Controller:
         self.stop()
 
         self.state = 0
-        self.choose_path = 0.5
+        self.choose_path = 0
         self.time_count = 0
         self.left_count = 0
         self.right_count = 0
@@ -41,7 +41,7 @@ class Controller:
         self.max_time = 90.0
 
         self.state = 0
-        self.choose_path = 0.5
+        self.choose_path = 0
         self.time_count = 0
         self.left_count = 0
         self.right_count = 0
@@ -110,7 +110,7 @@ class Controller:
     def __read_light_sensors(self):
         self.trainer.inputs.append(self.choose_path)
 
-        if self.choose_path != 0.5:
+        if self.choose_path != 0:
             return
 
         min_ls = 0
@@ -125,6 +125,8 @@ class Controller:
 
         if min(lights) < 500:
             self.choose_path = -0.5
+        elif (self.time_count / 1000.0) > 8.0:
+            self.choose_path = 0.5
 
     def __read_ground_sensors(self):
         min_gs = 0
@@ -251,7 +253,6 @@ class Controller:
             print("+++++++++++++++++++++++++++++++++++++++++++++++++++")
             print("Generation: {}".format(generation))
             current_population = []
-            reach_count = 0
             # Select each Genotype or Individual
 
             for population in range(GA.num_population):
@@ -259,7 +260,6 @@ class Controller:
                 print("Population: {}".format(population))
                 self.trainer.genotype = populations[population]
                 fitness = self.__evaluate_genotype()
-                reach_count += 1
                 current_population.append((self.trainer.genotype, float(fitness)))
 
             best = GA.get_best_genotype(current_population)
@@ -274,8 +274,8 @@ class Controller:
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
                 populations = GA.population_reproduce(current_population)
-            state1_0 = np.load("../pre_module/state1_0.npy")
-            populations[-1] = state1_0
+            # state1_0 = np.load("../pre_module/state1_0.npy")
+            # populations[-1] = state1_0
         # print("All Genotypes: {}".format(self.genotypes))
         print("GA optimization terminated.\n")
 
@@ -313,7 +313,7 @@ class Controller:
     def run_robot(self):
         self.reset()
         fitness = 0
-
+        self.trainer.idx = 0
         while self.robot.step(self.time_step) != -1:
             self.__read_data()
             self.take_move()

@@ -7,8 +7,8 @@ import numpy as np
 class GA:
     # DEFINE here the 3 GA Parameters:
     num_generations = 200
-    num_population = 80
-    num_elite = 40
+    num_population = 50
+    num_elite = 20
     cp = 100
     mp = 25
 
@@ -30,13 +30,13 @@ class GA:
             elif random.randint(1, 100) > GA.cp:
                 new_population.append(genotypes[individual - 1][0])
             else:
-                # Generate the rest of the population by using the genetic operations
-                parent1 = GA.__select_parent(genotypes_not_ranked)
-                parent2 = GA.__select_parent(genotypes_not_ranked)
-                # Apply crossover
-                child = GA.__crossover(parent1, parent2)
-                # Apply mutation
-                offspring = GA.__mutation(child)
+                # # Generate the rest of the population by using the genetic operations
+                # parent1 = GA.__select_parent(genotypes_not_ranked)
+                # parent2 = GA.__select_parent(genotypes_not_ranked)
+                # # Apply crossover
+                # child = GA.__crossover(parent1, parent2)
+                # # Apply mutation
+                offspring = GA.__mutation(genotypes[individual - 1][0])
                 new_population.append(numpy.array(offspring))
 
         return new_population
@@ -119,9 +119,6 @@ class GA:
         # reach_goal = np.load("../pre_module/right_reach.npy")
         population[0] = state1_0
         population[1] = state1_0
-        population[2] = state1_0
-        population[3] = state1_0
-        population[4] = state1_0
         # population[0] = state0_1
         # population[1] = reach_goal
         return population

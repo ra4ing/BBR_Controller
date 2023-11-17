@@ -85,23 +85,26 @@ class Controller:
         return to_min + (scale * to_range)
 
     def __read_light_sensors(self):
+        if self.choose_path != 0:
+            return
+
         min_ls = 0
         max_ls = 4300
 
         lights = []
         for i in range(8):
             temp = self.light_sensors[i].getValue()
-            # Adjust Values
             temp = self.adjust_value(temp, min_ls, max_ls)
             lights.append(temp)
-
-        if self.choose_path != 0:
-            return
 
         if min(lights) < 500:
             self.choose_path = 1
         elif (self.time_count / 1000.0) > 8.0:
             self.choose_path = -1
+
+    @staticmethod
+    def normalize_value(val, min_val, max_val):
+        return (val - min_val) / (max_val - min_val)
 
     def __read_ground_sensors(self):
         min_gs = 0
@@ -134,10 +137,6 @@ class Controller:
                                          -4.5, 4.5)
 
     def __read_distance_sensors(self):
-        if self.finish_obstacles:
-            self.finish_obstacles = False
-            return
-
         min_ds = 0
         max_ds = 2400
         avoid_speed = 5
@@ -149,6 +148,10 @@ class Controller:
             temp = sensor.getValue()  # Get value
             temp = self.adjust_value(temp, min_ds, max_ds)  # Adjust Values
             distances.append(temp)  # Save Data
+
+        if self.finish_obstacles:
+            self.finish_obstacles = False
+            return
 
         self.dis_adjust = 0
         if np.max(distances[0:3]) > avoid_distance or np.max(distances[5:8]) > avoid_distance:
@@ -188,7 +191,6 @@ class Controller:
                         if cnt >= 200:
                             self.state = 4
                             return
-        # print(cnt)
 
     def read_data(self):
         self.__read_light_sensors()
@@ -248,14 +250,15 @@ class Controller:
         while self.robot.step(self.time_step) != -1:
             self.read_data()
             self.take_move()
+
             self.time_count += self.time_step
             if self.state == 4:
                 break
-        print(self.time_count)
+        print(self.time_count / 1000)
         self.stop()
 
 
 if __name__ == "__main__":
-    my_robot = Robot()
-    controller = Controller(my_robot)
+    robot = Robot()
+    controller = Controller(robot)
     controller.run_robot()

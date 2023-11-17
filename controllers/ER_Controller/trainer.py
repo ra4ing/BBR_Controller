@@ -2,7 +2,6 @@ import numpy as np
 from ga import GA
 from mlp import MLP
 
-
 class Trainer:
 
     def __init__(self, robot):
@@ -150,14 +149,14 @@ class Trainer:
 
         if ls >= 0:
             if left and not right:
-                weight = 10
+                weight = 1
             if right and not left:
-                weight = 0.001
+                weight = 0.01
         elif ls < 0:
             if right and not left:
-                weight = 10
+                weight = 1
             if left and not right:
-                weight = 0.001
+                weight = 0.01
 
         return weight
 
@@ -174,17 +173,17 @@ class Trainer:
     @staticmethod
     def __combine_fitness_with_reward(ff, af, sf, gr, dr):
 
-        if ff < 0.7 or af < 0.5 or sf < 0.90:
+        if ff < 0.7 or af < 0.5 or sf < 0.80:
             return 0
 
-        ret = (af**8) * gr
+        ret = (af ** 8) * gr * dr
         # print("###")
         # print("ff\t\t\tsf\t\t\tgs\t\t\tdr")
         # print(str(ff) + "\t\t" + str(sf) + "\t\t" + str(gr) + "\t\t" + str(dr))
         return ret
 
     def cal_fitness_and_reward(self, speed):
-        if min(speed) < 2:
+        if min(speed) < 1:
             return 0
         # fitness
         forward_fitness = self.normalize_value((speed[0] + speed[1]) / 2.0, -6.28, 6.28)
@@ -197,6 +196,3 @@ class Trainer:
 
         return self.__combine_fitness_with_reward(forward_fitness, avoid_collision_fitness, spinning_fitness,
                                                   ground_rewards, distance_rewards)
-
-# 77nb
-# 12
