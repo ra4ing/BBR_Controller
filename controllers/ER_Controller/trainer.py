@@ -121,14 +121,13 @@ class Trainer:
     @staticmethod
     def __cal_distance_weight(ds):
         weight = 0.1
-        flag_0_7 = 0.145 < ds[0] < 0.35 or 0.145 < ds[7] < 0.35
-        flag_1_6 = 0.145 < ds[1] < 0.35 or 0.145 < ds[6] < 0.35
-        flag_2_5 = 0.145 < ds[2] < 0.35 or 0.145 < ds[5] < 0.35
-
-        if flag_0_7 or flag_1_6:
-            weight = 100
-        if flag_2_5:
-            weight = 1000
+        flag_0_7 = 0.148 < ds[0] < 0.35 or 0.148 < ds[7] < 0.35
+        flag_1_6 = 0.148 < ds[1] < 0.35 or 0.148 < ds[6] < 0.35
+        flag_2_5 = 0.148 < ds[2] < 0.35 or 0.148 < ds[5] < 0.35
+        # print("##############")
+        # print(ds)
+        if flag_0_7 or flag_1_6 or flag_2_5:
+            weight = 1
 
         return weight
 
@@ -140,20 +139,25 @@ class Trainer:
         center = gs[1] < 0.5
         right = gs[2] < 0.5
 
-        offline = not left and not center and not right
+        # offline = not left and not center and not right
         # online = left and center and right
 
-        if offline:
-            weight = 0.01
-        else:
-            weight = 1
+        # if offline:
+        #     weight = 0.1
+        # else:
+        #     weight = 0.1
+        weight = 0.1
 
-        if ls > 0:
+        if ls >= 0:
             if left and not right:
                 weight = 10
+            if right and not left:
+                weight = 0.001
         elif ls < 0:
             if right and not left:
                 weight = 10
+            if left and not right:
+                weight = 0.001
 
         return weight
 
@@ -170,16 +174,18 @@ class Trainer:
     @staticmethod
     def __combine_fitness_with_reward(ff, af, sf, gr, dr):
 
-        if ff < 0.75 or af < 0.5 or sf < 0.85:
+        if ff < 0.7 or af < 0.5 or sf < 0.90:
             return 0
 
-        ret = gr
-        print("###")
-        print("ff\t\t\tsf\t\t\tgs\t\t\tdr")
-        print(str(ff) + "\t\t" + str(sf) + "\t\t" + str(gr) + "\t\t" + str(dr))
+        ret = (af**8) * gr
+        # print("###")
+        # print("ff\t\t\tsf\t\t\tgs\t\t\tdr")
+        # print(str(ff) + "\t\t" + str(sf) + "\t\t" + str(gr) + "\t\t" + str(dr))
         return ret
 
     def cal_fitness_and_reward(self, speed):
+        if min(speed) < 2:
+            return 0
         # fitness
         forward_fitness = self.normalize_value((speed[0] + speed[1]) / 2.0, -6.28, 6.28)
         avoid_collision_fitness = 1 - max(self.inputs[3:11])
@@ -192,4 +198,5 @@ class Trainer:
         return self.__combine_fitness_with_reward(forward_fitness, avoid_collision_fitness, spinning_fitness,
                                                   ground_rewards, distance_rewards)
 
-# 右 7 17
+# 77nb
+# 12

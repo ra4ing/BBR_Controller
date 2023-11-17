@@ -30,7 +30,7 @@ class Controller:
         self.stop()
 
         self.state = 0
-        self.choose_path = 0
+        self.choose_path = 0.5
         self.time_count = 0
         self.left_count = 0
         self.right_count = 0
@@ -41,7 +41,7 @@ class Controller:
         self.max_time = 90.0
 
         self.state = 0
-        self.choose_path = 0
+        self.choose_path = 0.5
         self.time_count = 0
         self.left_count = 0
         self.right_count = 0
@@ -110,7 +110,7 @@ class Controller:
     def __read_light_sensors(self):
         self.trainer.inputs.append(self.choose_path)
 
-        if self.choose_path != 0:
+        if self.choose_path != 0.5:
             return
 
         min_ls = 0
@@ -125,8 +125,6 @@ class Controller:
 
         if min(lights) < 500:
             self.choose_path = -0.5
-        elif self.time_count / 1000 > 5.0:
-            self.choose_path = 0.5
 
     def __read_ground_sensors(self):
         min_gs = 0
@@ -276,15 +274,16 @@ class Controller:
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
                 populations = GA.population_reproduce(current_population)
-
+            state1_0 = np.load("../pre_module/state1_0.npy")
+            populations[-1] = state1_0
         # print("All Genotypes: {}".format(self.genotypes))
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(0, 1):
+        for i in range(0, 50):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
-            self.trainer.genotype = np.load("../pre_module/right_reach.npy")
+            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
             self.trainer.update_mlp()
 
             # trial: right
@@ -305,9 +304,9 @@ class Controller:
         times = self.time_count / self.time_step
         fitness /= times
 
-        # if self.state == 4:
-        #     fitness += 0.3
-        #     fitness -= self.time_count / 1000_000
+        if self.state == 4:
+            fitness *= (2 - self.time_count / 1000_000)
+            # fitness -= self.time_count / 1000_000
 
         return fitness
 

@@ -114,10 +114,14 @@ class GA:
         # Create the initial population with random weights
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
 
-        state0_0 = np.load("../pre_module/state0_0.npy")
-        state0_1 = np.load("../pre_module/state0_1.npy")
-        reach_goal = np.load("../pre_module/right_reach.npy")
-        population[0] = state0_0
-        population[1] = state0_1
-        population[2] = reach_goal
+        state1_0 = np.load("../pre_module/state1_0.npy")
+        # state0_1 = np.load("../pre_module/state0_1.npy")
+        # reach_goal = np.load("../pre_module/right_reach.npy")
+        population[0] = state1_0
+        population[1] = state1_0
+        population[2] = state1_0
+        population[3] = state1_0
+        population[4] = state1_0
+        # population[0] = state0_1
+        # population[1] = reach_goal
         return population

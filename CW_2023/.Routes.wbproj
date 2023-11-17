@@ -9,5 +9,5 @@ renderingMode: PLAIN
 orthographicViewHeight: 1
 textFiles: -1
 consoles: Console:All:All
-renderingDevicePerspectives: Supervisor:display;1;1.42;0;0
+renderingDevicePerspectives: Supervisor:display;1;0.973333;0;0
 renderingDevicePerspectives: e-puck:camera;0;12.7778;0;0
