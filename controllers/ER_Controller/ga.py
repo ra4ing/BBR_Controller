@@ -9,9 +9,8 @@ class GA:
     num_generations = 200
     num_population = 50
     num_elite = 20
-    cp = 30
-    cpp = 20
-    mp = 20
+    cp = 85
+    mp = 15
 
     @staticmethod
     def population_reproduce(genotypes):
@@ -36,17 +35,8 @@ class GA:
                 offspring = GA.__mutation(child)
                 new_population.append(numpy.array(offspring))
             else:
-                # Generate the rest of the population by using the genetic operations
-                parent1 = GA.__select_parent(genotypes)
-                # parent2 = GA.__select_parent(genotypes_not_ranked)
-                # Apply crossover
-                # child = GA.__crossover(parent1, parent2)
-                # Apply mutation
-                offspring = GA.__mutation(parent1[0])
-                new_population.append(numpy.array(offspring))
+                new_population.append(np.random.uniform(low=-1, high=1, size=len(genotypes[0][0])))
 
-        # state1_0 = np.load("../pre_module/state1_0.npy")
-        # new_population[-1] = state1_0
         return new_population
 
     @staticmethod
@@ -68,50 +58,36 @@ class GA:
 
     @staticmethod
     def __select_parent(genotypes):
-        # Tournament Selection
-        # Select a few individuals of the population randomly
-        # group = []
-        # # population_size = len(genotypes)
-        # number_individuals = 3
-        # for selected in range(0, number_individuals - 1):
-        #     group.append()
-        # # Then, select the best individual of this group
-        # group_ranked = GA.__rank_population(group)
-        return genotypes[random.choice([0, GA.num_elite])]
+        genotypes_size = 3
+        group = random.sample(genotypes, genotypes_size)
+        group.sort(key=lambda x: x[1], reverse=True)  # 假设适应度越高越好
+        return group[0]
 
     @staticmethod
     def __crossover(parent1, parent2):
         child = []
-        # Center
-        for gene in range(len(parent1[0])):
-            # The new offspring will have its first half of its genes taken from one parent
-            if random.randint(1, 100) < GA.cpp:
-                child.append(parent1[0][gene])
-            else:
-                child.append(parent2[0][gene])
-
+        crossover_points = sorted(random.sample(range(1, len(parent1[0])), 2))
+        segments = [parent1[0][:crossover_points[0]],
+                    parent2[0][crossover_points[0]:crossover_points[1]],
+                    parent1[0][crossover_points[1]:]]
+        child.extend(segments[0])
+        child.extend(segments[1])
+        child.extend(segments[2])
         return child
 
     @staticmethod
     def __mutation(child):
-        # Changes a single gene randomly
+        """基于位置的变异策略"""
         after_mutation = []
-
-        # mutation percentage (integer number between 0 and 100):
-
-        for gene in range(len(child)):
+        for index, gene in enumerate(child):
             if random.randint(1, 100) < GA.mp:
-                # The random value to be added to the gene
                 random_value = numpy.random.uniform(-1.0, 1.0, 1)
-                temp = child[gene] + random_value[0]
+                temp = gene + 0.3 * random_value[0]
                 # Clip
-                if temp < -1:
-                    temp = -1
-                elif temp > 1:
-                    temp = 1
+                temp = max(min(temp, 1), -1)
                 after_mutation.append(temp)
             else:
-                after_mutation.append(child[gene])
+                after_mutation.append(gene)
         return after_mutation
 
     @staticmethod

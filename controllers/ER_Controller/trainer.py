@@ -203,22 +203,23 @@ class Trainer:
     @staticmethod
     def __combine_fitness_with_reward(ff, af, sf, gr, dr):
 
-        if ff < 0.7 or af < 0.5 or sf < 0.75:
-            return 0
-
-        ret = (ff ** 4) * (af ** 4) * (sf ** 8) * (gr + dr)
+        ret = (ff ** 4) * (af ** 5) * (sf ** 8) * (gr + dr)
         # print("###")
         # print("ff\t\t\tsf\t\t\tgs\t\t\tdr")
         # print(str(ff) + "\t\t" + str(sf) + "\t\t" + str(gr) + "\t\t" + str(dr))
         return ret
 
     def cal_fitness_and_reward(self, speed):
-        if min(speed) < 1:
-            return 0
+
         # fitness
         forward_fitness = self.normalize_value((speed[0] + speed[1]) / 2.0, -6.28, 6.28)
         avoid_collision_fitness = 1 - max(self.inputs[3:11])
         spinning_fitness = 1 - self.normalize_value(abs(speed[0] - speed[1]), 0, 12.56)
+
+        if min(speed) < 1 or spinning_fitness < 0.7:
+            self.online_time = 0
+            self.offline_time = 0
+            return 0
 
         # rewards
         ground_rewards = self.__cal_ground_weight(self.inputs[0:3], self.inputs[11])
