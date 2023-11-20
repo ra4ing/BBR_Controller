@@ -9,8 +9,9 @@ class GA:
     num_generations = 200
     num_population = 50
     num_elite = 20
-    cp = 100
-    mp = 25
+    cp = 30
+    cpp = 20
+    mp = 20
 
     @staticmethod
     def population_reproduce(genotypes):
@@ -27,18 +28,25 @@ class GA:
             # Clone the elite individuals
             if population_size - individual < GA.num_elite:
                 new_population.append(genotypes[individual - 1][0])
-            elif random.randint(1, 100) > GA.cp:
-                new_population.append(genotypes[individual - 1][0])
+            elif random.randint(1, 100) < GA.cp:
+                parent1 = GA.__select_parent(genotypes_not_ranked)
+                parent2 = GA.__select_parent(genotypes_not_ranked)
+                # Apply crossover
+                child = GA.__crossover(parent1, parent2)
+                offspring = GA.__mutation(child)
+                new_population.append(numpy.array(offspring))
             else:
-                # # Generate the rest of the population by using the genetic operations
-                # parent1 = GA.__select_parent(genotypes_not_ranked)
+                # Generate the rest of the population by using the genetic operations
+                parent1 = GA.__select_parent(genotypes)
                 # parent2 = GA.__select_parent(genotypes_not_ranked)
-                # # Apply crossover
+                # Apply crossover
                 # child = GA.__crossover(parent1, parent2)
-                # # Apply mutation
-                offspring = GA.__mutation(genotypes[individual - 1][0])
+                # Apply mutation
+                offspring = GA.__mutation(parent1[0])
                 new_population.append(numpy.array(offspring))
 
+        # state1_0 = np.load("../pre_module/state1_0.npy")
+        # new_population[-1] = state1_0
         return new_population
 
     @staticmethod
@@ -62,23 +70,22 @@ class GA:
     def __select_parent(genotypes):
         # Tournament Selection
         # Select a few individuals of the population randomly
-        group = []
-        population_size = len(genotypes)
-        number_individuals = 5
-        for selected in range(0, number_individuals - 1):
-            group.append(genotypes[random.choice([0, population_size - 1])])
-        # Then, select the best individual of this group
-        group_ranked = GA.__rank_population(group)
-        return group_ranked[-1]
+        # group = []
+        # # population_size = len(genotypes)
+        # number_individuals = 3
+        # for selected in range(0, number_individuals - 1):
+        #     group.append()
+        # # Then, select the best individual of this group
+        # group_ranked = GA.__rank_population(group)
+        return genotypes[random.choice([0, GA.num_elite])]
 
     @staticmethod
     def __crossover(parent1, parent2):
         child = []
         # Center
-        crossover_point = int(len(parent1[0]) / 2)
         for gene in range(len(parent1[0])):
             # The new offspring will have its first half of its genes taken from one parent
-            if gene < crossover_point:
+            if random.randint(1, 100) < GA.cpp:
                 child.append(parent1[0][gene])
             else:
                 child.append(parent2[0][gene])
@@ -115,10 +122,26 @@ class GA:
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
 
         state1_0 = np.load("../pre_module/state1_0.npy")
-        # state0_1 = np.load("../pre_module/state0_1.npy")
-        # reach_goal = np.load("../pre_module/right_reach.npy")
+        right_reach_goal = np.load("../pre_module/right_reach.npy")
+        left_reach_goal = np.load("../pre_module/left_reach.npy")
         population[0] = state1_0
         population[1] = state1_0
-        # population[0] = state0_1
-        # population[1] = reach_goal
+        population[2] = state1_0
+        population[3] = state1_0
+        population[4] = state1_0
+        population[5] = right_reach_goal
+        population[6] = right_reach_goal
+        population[7] = right_reach_goal
+        population[8] = right_reach_goal
+        population[9] = right_reach_goal
+        population[10] = left_reach_goal
+        population[11] = left_reach_goal
+        population[12] = left_reach_goal
+        population[13] = left_reach_goal
+        population[14] = left_reach_goal
+
+        # for i in range(20):
+        #     tmp = np.load("../module/Best{}.npy".format(i))
+        #     population[15 + i] = tmp
+
         return population

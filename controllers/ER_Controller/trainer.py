@@ -2,6 +2,7 @@ import numpy as np
 from ga import GA
 from mlp import MLP
 
+
 class Trainer:
 
     def __init__(self, robot):
@@ -13,6 +14,9 @@ class Trainer:
         self.time_step = 32
         self.online_time = 0
         self.offline_time = 0
+        self.outline = False
+        self.gs_rewards_count = 0
+        self.ds_rewards_count = 0
 
         self.__init_mlp()
         self.__init_receiver_and_emitter(robot)
@@ -94,6 +98,7 @@ class Trainer:
         while self.receiver.getQueueLength() > 0:
             self.wait_message = True
             received_data = self.receiver.getString()
+            # print(received_data)
             if received_data is not None:
                 return received_data
             self.receiver.nextPacket()
@@ -111,52 +116,77 @@ class Trainer:
             self.send_command("turn_on_light")
 
     def wait_reset_complete(self):
-        self.robot.step(self.time_step)
+        while self.robot.step(self.time_step) != -1:
+            while self.receiver.getQueueLength() > 0:
+                received_data = self.receiver.getString()
+                if received_data == 'ok':
+                    return
+                self.receiver.nextPacket()
 
     def plt(self, generation, best, average):
         self.send_command(
             "plt " + str(generation) + " " + str(best) + " " + str(average) + " " + str(GA.num_generations))
 
-    @staticmethod
-    def __cal_distance_weight(ds):
-        weight = 0.1
+    def __cal_distance_weight(self, ds, gs):
+        weight = 0
         flag_0_7 = 0.148 < ds[0] < 0.35 or 0.148 < ds[7] < 0.35
         flag_1_6 = 0.148 < ds[1] < 0.35 or 0.148 < ds[6] < 0.35
         flag_2_5 = 0.148 < ds[2] < 0.35 or 0.148 < ds[5] < 0.35
         # print("##############")
         # print(ds)
-        if flag_0_7 or flag_1_6 or flag_2_5:
-            weight = 1
+
+        left = gs[0] < 0.5
+        center = gs[1] < 0.5
+        right = gs[2] < 0.5
+        offline = not left and not center and not right
+
+        threshold = 50
+
+        if offline:
+            self.offline_time += 1
+            if flag_0_7 or flag_1_6 or flag_2_5:
+                if self.offline_time >= threshold:
+                    # print("###")
+                    self.ds_rewards_count += 1
+                    self.offline_time = 0
+                    weight = 100
+
+        else:
+            if self.online_time > 50:
+                self.offline_time = 0
+
+        if self.ds_rewards_count > 4 or self.gs_rewards_count <= 0:
+            weight = 0
 
         return weight
 
-    @staticmethod
-    def __cal_ground_weight(gs, ls):
+    def __cal_ground_weight(self, gs, ls):
         # weight = np.mean([(1 - i) for i in gs])
 
         left = gs[0] < 0.5
         center = gs[1] < 0.5
         right = gs[2] < 0.5
 
-        # offline = not left and not center and not right
+        offline = not left and not center and not right
         # online = left and center and right
 
-        # if offline:
-        #     weight = 0.1
-        # else:
-        #     weight = 0.1
-        weight = 0.1
+        weight = 0
+        threshold = 170
 
-        if ls >= 0:
-            if left and not right:
-                weight = 1
-            if right and not left:
-                weight = 0.01
-        elif ls < 0:
-            if right and not left:
-                weight = 1
-            if left and not right:
-                weight = 0.01
+        if not offline:
+            self.online_time += 1
+
+        if (ls >= 0 and left and not right) or (ls < 0 and right and not left):
+            if self.online_time >= threshold:
+                self.gs_rewards_count += 1
+                self.online_time = 0
+                weight = 250
+        else:
+            if self.offline_time >= 50:
+                self.online_time = 0
+
+        if (self.gs_rewards_count > 4 and self.ds_rewards_count == 0) or self.gs_rewards_count > 7:
+            weight = 0
 
         return weight
 
@@ -173,10 +203,10 @@ class Trainer:
     @staticmethod
     def __combine_fitness_with_reward(ff, af, sf, gr, dr):
 
-        if ff < 0.7 or af < 0.5 or sf < 0.80:
+        if ff < 0.7 or af < 0.5 or sf < 0.75:
             return 0
 
-        ret = (af ** 8) * gr * dr
+        ret = (ff ** 4) * (af ** 4) * (sf ** 8) * (gr + dr)
         # print("###")
         # print("ff\t\t\tsf\t\t\tgs\t\t\tdr")
         # print(str(ff) + "\t\t" + str(sf) + "\t\t" + str(gr) + "\t\t" + str(dr))
@@ -192,7 +222,7 @@ class Trainer:
 
         # rewards
         ground_rewards = self.__cal_ground_weight(self.inputs[0:3], self.inputs[11])
-        distance_rewards = self.__cal_distance_weight(self.inputs[3:11])
+        distance_rewards = self.__cal_distance_weight(self.inputs[3:11], self.inputs[0:3])
 
         return self.__combine_fitness_with_reward(forward_fitness, avoid_collision_fitness, spinning_fitness,
                                                   ground_rewards, distance_rewards)

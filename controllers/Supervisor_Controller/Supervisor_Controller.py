@@ -1,11 +1,9 @@
-import sys
-
 from controller import Supervisor, Keyboard
 
 
 class Reset:
-    def __init__(self):
-        self.supervisor = Supervisor()
+    def __init__(self, s):
+        self.supervisor = s
 
         self.reset_complete = False
         self.light_on = False
@@ -18,6 +16,8 @@ class Reset:
         self.__init_receiver_and_emitter()
         self.__init_display()
         self.__init_obstacle_node()
+
+        self.received = False
 
     def __init_display(self):
         # Display: screen to plot the fitness values of the best individual and the average of the entire population
@@ -100,10 +100,11 @@ class Reset:
         self.prev_average_fitness = average_fitness
 
     def handle_receiver(self):
+        self.received = False
         while self.receiver.getQueueLength() > 0:
             # print("received message")
             received_data = self.receiver.getString()
-
+            self.received = True
             if received_data[:3] == "plt":
                 values = received_data.split()
                 generation = int(values[1])
@@ -111,16 +112,22 @@ class Reset:
                 average = float(values[3])
                 num_generations = int(values[4])
                 self.plot_fitness(generation, best, average, num_generations)
-            if received_data == "turn_on_light":
+
+            elif received_data == "turn_on_light":
                 self.reset_robot()
                 self.reset_obstacle()
                 self.turn_on_light()
+
             elif received_data == "turn_off_light":
                 self.reset_robot()
                 self.reset_obstacle()
                 self.turn_off_light()
 
             self.receiver.nextPacket()
+
+    def handle_emitter(self):
+        if self.received:
+            self.send_message("ok")
 
     def send_message(self, message):
         message = message.encode("utf-8")
@@ -148,9 +155,12 @@ class Reset:
         while self.supervisor.step(self.time_step) != -1:
             self.handle_receiver()
 
+            self.handle_emitter()
+
 
 if __name__ == '__main__':
-    trainer = Reset()
+    supervisor = Supervisor()
+    trainer = Reset(supervisor)
 
     # Function used to run the best individual or the GA
     keyboard = Keyboard()

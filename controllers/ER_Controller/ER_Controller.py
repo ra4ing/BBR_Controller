@@ -34,6 +34,8 @@ class Controller:
         self.time_count = 0
         self.left_count = 0
         self.right_count = 0
+        self.trainer.gs_rewards_count = 0
+        self.trainer.ds_rewards_count = 0
 
     def __init_parameters(self):
         self.time_step = 32  # ms
@@ -125,7 +127,7 @@ class Controller:
 
         if min(lights) < 500:
             self.choose_path = -0.5
-        elif (self.time_count / 1000.0) > 8.0:
+        elif (self.time_count / 1000.0) > 3.0:
             self.choose_path = 0.5
 
     def __read_ground_sensors(self):
@@ -220,6 +222,7 @@ class Controller:
         self.velocity_right = 0
         self.left_motor.setVelocity(0)
         self.right_motor.setVelocity(0)
+        self.robot.step(self.time_step)
 
     def __evaluate_genotype(self):
         self.trainer.update_mlp()
@@ -230,11 +233,13 @@ class Controller:
         for i in range(number_interaction_loops):
             self.trainer.reset_environment("right")
             self.trainer.wait_reset_complete()
+            self.reset()
             fitness = self.run_robot()
             fitness_per_trial.append(fitness)
 
             self.trainer.reset_environment("left")
             self.trainer.wait_reset_complete()
+            self.reset()
             fitness = self.run_robot()
             fitness_per_trial.append(fitness)
 
@@ -269,7 +274,7 @@ class Controller:
             print("Average: {}".format(average))
             for idx in range(GA.num_elite):
                 np.save("../module/Best{}.npy".format(idx), populations[idx])
-            self.trainer.plt(generation, self.normalize_value(best[1], 0, 10), self.normalize_value(average, 0, 10))
+            self.trainer.plt(generation, self.normalize_value(best[1], 0, 1), self.normalize_value(average, 0, 1))
 
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
@@ -283,17 +288,21 @@ class Controller:
         for i in range(0, 50):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
-            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
+            self.trainer.genotype = np.load("../module/Best0.npy")
             self.trainer.update_mlp()
 
             # trial: right
             self.trainer.reset_environment("right")
+            self.trainer.wait_reset_complete()
+            self.reset()
             fitness = self.run_robot()
             print("Fitness: {}".format(fitness))
             print(self.time_count / 1000)
 
             # trial: left
             self.trainer.reset_environment("left")
+            self.trainer.wait_reset_complete()
+            self.reset()
             fitness = self.run_robot()
             print("Fitness: {}".format(fitness))
             print(self.time_count / 1000)
@@ -304,16 +313,18 @@ class Controller:
         times = self.time_count / self.time_step
         fitness /= times
 
-        if self.state == 4:
-            fitness *= (2 - self.time_count / 1000_000)
-            # fitness -= self.time_count / 1000_000
+        if self.trainer.gs_rewards_count > 0 and self.trainer.ds_rewards_count > 0:
+            if self.state == 4:
+                fitness += 0.1
+                fitness -= self.time_count / 1000_000
+
+        if self.trainer.gs_rewards_count > 7 or self.trainer.ds_rewards_count >= 8:
+            return 0
 
         return fitness
 
     def run_robot(self):
-        self.reset()
         fitness = 0
-        self.trainer.idx = 0
         while self.robot.step(self.time_step) != -1:
             self.__read_data()
             self.take_move()
@@ -328,6 +339,8 @@ class Controller:
                     self.state = 0
             elif (self.time_count / 1000) >= self.max_time:
                 break
+        print(self.trainer.gs_rewards_count)
+        print(self.trainer.ds_rewards_count)
 
         fitness = self.adjust_fitness(fitness)
         self.stop()
