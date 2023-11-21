@@ -38,7 +38,7 @@ class Trainer:
 
     def __init_mlp(self):
         self.number_input_layer = 12
-        self.number_hidden_layer = [24, 20]
+        self.number_hidden_layer = [12, 10]
         self.number_output_layer = 2
 
         self.number_neurons_per_layer = []
@@ -167,7 +167,7 @@ class Trainer:
             if self.online_time >= threshold:
                 self.gs_rewards_count += 1
                 self.online_time = 0
-                weight = 200
+                weight = 400
 
         if (self.gs_rewards_count > 4 and self.ds_rewards_count == 0) or self.gs_rewards_count > 6:
             weight = 0

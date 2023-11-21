@@ -284,9 +284,10 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(6, 50):
+        for i in range(18, 20):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
+            # self.trainer.genotype = np.load("../pre_module/right_reach.npy")
             self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
             self.trainer.update_mlp()
 
