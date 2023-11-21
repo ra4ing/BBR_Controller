@@ -32,10 +32,9 @@ class Controller:
         self.state = 0
         self.choose_path = 0
         self.time_count = 0
-        self.left_count = 0
-        self.right_count = 0
-        self.trainer.gs_rewards_count = 0
-        self.trainer.ds_rewards_count = 0
+        # self.left_count = 0
+        # self.right_count = 0
+        self.trainer.reset()
 
     def __init_parameters(self):
         self.time_step = 32  # ms
@@ -208,10 +207,10 @@ class Controller:
         self.velocity_left = output[0]
         self.velocity_right = output[1]
 
-        if self.velocity_left > self.velocity_right:
-            self.left_count += 1
-        else:
-            self.right_count += 1
+        # if self.velocity_left > self.velocity_right:
+        #     self.left_count += 1
+        # else:
+        #     self.right_count += 1
 
         self.left_motor.setVelocity(self.velocity_left)
         self.right_motor.setVelocity(self.velocity_right)
@@ -274,7 +273,7 @@ class Controller:
             print("Average: {}".format(average))
             for idx in range(GA.num_elite):
                 np.save("../module/Best{}.npy".format(idx), populations[idx])
-            self.trainer.plt(generation, self.normalize_value(best[1], 0, 1), self.normalize_value(average, 0, 1))
+            self.trainer.plt(generation, self.normalize_value(best[1], 0, 10), self.normalize_value(average, 0, 10))
 
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
@@ -285,10 +284,10 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(0, 50):
+        for i in range(6, 50):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
-            self.trainer.genotype = np.load("../module/Best0.npy")
+            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
             self.trainer.update_mlp()
 
             # trial: right
@@ -315,10 +314,13 @@ class Controller:
 
         if self.trainer.gs_rewards_count > 0 and self.trainer.ds_rewards_count > 0:
             if self.state == 4:
-                fitness += 0.1
+                fitness += 0.3
                 fitness -= self.time_count / 1000_000
 
-        if self.trainer.gs_rewards_count > 7 or self.trainer.ds_rewards_count >= 8:
+        if self.trainer.gs_rewards_count > 8 or self.trainer.ds_rewards_count > 8:
+            return 0
+
+        if self.trainer.gs_rewards_count < 2 < self.trainer.ds_rewards_count:
             return 0
 
         return fitness
@@ -332,7 +334,7 @@ class Controller:
 
             self.time_count += self.time_step
             if self.state == 4:
-                if (self.time_count / 1000) > 30:
+                if (self.time_count / 1000) > 15:
                     print(self.time_count / 1000)
                     break
                 else:

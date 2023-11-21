@@ -30,7 +30,7 @@ class GA:
             elif random.randint(1, 100) < GA.cp:
                 parent1 = GA.__select_parent(genotypes_not_ranked)
                 parent2 = GA.__select_parent(genotypes_not_ranked)
-                # Apply crossover
+
                 child = GA.__crossover(parent1, parent2)
                 offspring = GA.__mutation(child)
                 new_population.append(numpy.array(offspring))
@@ -82,7 +82,7 @@ class GA:
         for index, gene in enumerate(child):
             if random.randint(1, 100) < GA.mp:
                 random_value = numpy.random.uniform(-1.0, 1.0, 1)
-                temp = gene + 0.3 * random_value[0]
+                temp = gene + 0.2 * random_value[0]
                 # Clip
                 temp = max(min(temp, 1), -1)
                 after_mutation.append(temp)
@@ -97,27 +97,27 @@ class GA:
         # Create the initial population with random weights
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
 
-        state1_0 = np.load("../pre_module/state1_0.npy")
-        right_reach_goal = np.load("../pre_module/right_reach.npy")
-        left_reach_goal = np.load("../pre_module/left_reach.npy")
-        population[0] = state1_0
-        population[1] = state1_0
-        population[2] = state1_0
-        population[3] = state1_0
-        population[4] = state1_0
-        population[5] = right_reach_goal
-        population[6] = right_reach_goal
-        population[7] = right_reach_goal
-        population[8] = right_reach_goal
-        population[9] = right_reach_goal
-        population[10] = left_reach_goal
-        population[11] = left_reach_goal
-        population[12] = left_reach_goal
-        population[13] = left_reach_goal
-        population[14] = left_reach_goal
-
+        # state1_0 = np.load("../pre_module/state1_0.npy")
+        # right_reach_goal = np.load("../pre_module/right_reach.npy")
+        # left_reach_goal = np.load("../pre_module/left_reach.npy")
+        # population[0] = state1_0
+        # population[1] = state1_0
+        # population[2] = state1_0
+        # population[3] = state1_0
+        # population[4] = state1_0
+        # population[5] = right_reach_goal
+        # population[6] = right_reach_goal
+        # population[7] = right_reach_goal
+        # population[8] = right_reach_goal
+        # population[9] = right_reach_goal
+        # population[10] = left_reach_goal
+        # population[11] = left_reach_goal
+        # population[12] = left_reach_goal
+        # population[13] = left_reach_goal
+        # population[14] = left_reach_goal
+        #
         # for i in range(20):
-        #     tmp = np.load("../module/Best{}.npy".format(i))
+        #     tmp = np.load("../pre_module/Best{}.npy".format(i))
         #     population[15 + i] = tmp
 
         return population

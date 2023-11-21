@@ -6,24 +6,39 @@ from mlp import MLP
 class Trainer:
 
     def __init__(self, robot):
+
         self.robot = robot
         self.genotype = None
         self.last_genotype = None
         self.wait_message = False
+        self.enable_dis_reward = None
 
         self.time_step = 32
         self.online_time = 0
         self.offline_time = 0
-        self.outline = False
+        self.avoid_collision_time = 0
         self.gs_rewards_count = 0
         self.ds_rewards_count = 0
+        self.ff = 1
+        self.af = 1
+        self.sp = 1
 
         self.__init_mlp()
         self.__init_receiver_and_emitter(robot)
 
+    def reset(self):
+        self.online_time = 0
+        self.offline_time = 0
+        self.avoid_collision_time = 0
+        self.gs_rewards_count = 0
+        self.ds_rewards_count = 0
+        self.ff = 1
+        self.af = 1
+        self.sp = 1
+
     def __init_mlp(self):
         self.number_input_layer = 12
-        self.number_hidden_layer = [12, 10]
+        self.number_hidden_layer = [24, 20]
         self.number_output_layer = 2
 
         self.number_neurons_per_layer = []
@@ -127,65 +142,34 @@ class Trainer:
         self.send_command(
             "plt " + str(generation) + " " + str(best) + " " + str(average) + " " + str(GA.num_generations))
 
-    def __cal_distance_weight(self, ds, gs):
+    def __cal_distance_weight(self, choose_right, choose_left):
         weight = 0
-        flag_0_7 = 0.148 < ds[0] < 0.35 or 0.148 < ds[7] < 0.35
-        flag_1_6 = 0.148 < ds[1] < 0.35 or 0.148 < ds[6] < 0.35
-        flag_2_5 = 0.148 < ds[2] < 0.35 or 0.148 < ds[5] < 0.35
-        # print("##############")
-        # print(ds)
+        threshold = 32
 
-        left = gs[0] < 0.5
-        center = gs[1] < 0.5
-        right = gs[2] < 0.5
-        offline = not left and not center and not right
+        if choose_right or choose_left:
+            self.avoid_collision_time += 1
+            if self.avoid_collision_time >= threshold and self.enable_dis_reward:
+                self.ds_rewards_count += 1
+                self.avoid_collision_time = 0
+                self.enable_dis_reward = False
+                weight = 100
 
-        threshold = 50
-
-        if offline:
-            self.offline_time += 1
-            if flag_0_7 or flag_1_6 or flag_2_5:
-                if self.offline_time >= threshold:
-                    # print("###")
-                    self.ds_rewards_count += 1
-                    self.offline_time = 0
-                    weight = 100
-
-        else:
-            if self.online_time > 50:
-                self.offline_time = 0
-
-        if self.ds_rewards_count > 4 or self.gs_rewards_count <= 0:
+        if self.ds_rewards_count > 4 or self.gs_rewards_count <= 1:
             weight = 0
 
         return weight
 
-    def __cal_ground_weight(self, gs, ls):
-        # weight = np.mean([(1 - i) for i in gs])
-
-        left = gs[0] < 0.5
-        center = gs[1] < 0.5
-        right = gs[2] < 0.5
-
-        offline = not left and not center and not right
-        # online = left and center and right
-
+    def __cal_ground_weight(self, choose_right, choose_left):
         weight = 0
         threshold = 170
 
-        if not offline:
-            self.online_time += 1
-
-        if (ls >= 0 and left and not right) or (ls < 0 and right and not left):
+        if choose_left or choose_right:
             if self.online_time >= threshold:
                 self.gs_rewards_count += 1
                 self.online_time = 0
-                weight = 250
-        else:
-            if self.offline_time >= 50:
-                self.online_time = 0
+                weight = 200
 
-        if (self.gs_rewards_count > 4 and self.ds_rewards_count == 0) or self.gs_rewards_count > 7:
+        if (self.gs_rewards_count > 4 and self.ds_rewards_count == 0) or self.gs_rewards_count > 6:
             weight = 0
 
         return weight
@@ -204,26 +188,61 @@ class Trainer:
     def __combine_fitness_with_reward(ff, af, sf, gr, dr):
 
         ret = (ff ** 4) * (af ** 5) * (sf ** 8) * (gr + dr)
-        # print("###")
-        # print("ff\t\t\tsf\t\t\tgs\t\t\tdr")
-        # print(str(ff) + "\t\t" + str(sf) + "\t\t" + str(gr) + "\t\t" + str(dr))
         return ret
 
     def cal_fitness_and_reward(self, speed):
 
         # fitness
-        forward_fitness = self.normalize_value((speed[0] + speed[1]) / 2.0, -6.28, 6.28)
-        avoid_collision_fitness = 1 - max(self.inputs[3:11])
-        spinning_fitness = 1 - self.normalize_value(abs(speed[0] - speed[1]), 0, 12.56)
+        # forward_fitness = self.normalize_value((speed[0] + speed[1]) / 2.0, -6.28, 6.28)
+        # avoid_collision_fitness = 1 - max(self.inputs[3:11])
+        # spinning_fitness = 1 - self.normalize_value(abs(speed[0] - speed[1]), 0, 12.56)
 
-        if min(speed) < 1 or spinning_fitness < 0.7:
+        self.ff += ((speed[0] + speed[1]) / 2.0) / (6.28 * 100)
+        self.af += (0.5 - max(self.inputs[3:11])) / 100
+        self.sp += (0.5 - self.normalize_value(abs(speed[0] - speed[1]), 0, 12.56)) / 100
+
+        if min(speed) < 0:
             self.online_time = 0
             self.offline_time = 0
-            return 0
+            self.avoid_collision_time = 0
+
+        ds = self.inputs[3:11]
+        gs = self.inputs[0:3]
+        ls = self.inputs[11]
+
+        flag_0_7 = 0.148 < ds[0] < 0.35 or 0.148 < ds[7] < 0.35
+        flag_1_6 = 0.148 < ds[1] < 0.35 or 0.148 < ds[6] < 0.35
+        flag_2_5 = 0.148 < ds[2] < 0.35 or 0.148 < ds[5] < 0.35
+        flag_for_right = 0.148 < ds[5] < 0.35
+        flag_for_left = 0.148 < ds[2] < 0.35
+        left = gs[0] < 0.5
+        center = gs[1] < 0.5
+        right = gs[2] < 0.5
+        gs_choose_right = ls > 0 and left and not right
+        gs_choose_left = ls < 0 and right and not left
+        ds_choose_right = ls > 0 and flag_for_right
+        ds_choose_left = ls < 0 and flag_for_left
+        offline = not left and not center and not right
+
+        if offline:
+            self.offline_time += 1
+            if self.offline_time >= 50:
+                self.online_time = 0
+        else:
+            self.online_time += 1
+            if self.online_time >= 64:
+                self.offline_time = 0
+                self.avoid_collision_time = 0
+                self.enable_dis_reward = True
 
         # rewards
-        ground_rewards = self.__cal_ground_weight(self.inputs[0:3], self.inputs[11])
-        distance_rewards = self.__cal_distance_weight(self.inputs[3:11], self.inputs[0:3])
+        ground_rewards = self.__cal_ground_weight(gs_choose_right, gs_choose_left)
+        distance_rewards = self.__cal_distance_weight(ds_choose_right, ds_choose_left)
+        scale = max((self.ff + self.af + self.sp), 0)
 
-        return self.__combine_fitness_with_reward(forward_fitness, avoid_collision_fitness, spinning_fitness,
-                                                  ground_rewards, distance_rewards)
+        if flag_0_7 or flag_1_6 or flag_2_5:
+            ground_rewards = 0
+        if not offline:
+            distance_rewards = 0
+
+        return (ground_rewards + distance_rewards) * scale * 0.1
