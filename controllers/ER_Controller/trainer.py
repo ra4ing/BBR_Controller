@@ -144,7 +144,7 @@ class Trainer:
 
     def __cal_distance_weight(self, choose_right, choose_left):
         weight = 0
-        threshold = 32
+        threshold = 20
 
         if choose_right or choose_left:
             self.avoid_collision_time += 1
@@ -152,9 +152,9 @@ class Trainer:
                 self.ds_rewards_count += 1
                 self.avoid_collision_time = 0
                 self.enable_dis_reward = False
-                weight = 100
+                weight = 500
 
-        if self.ds_rewards_count > 4 or self.gs_rewards_count <= 1:
+        if self.ds_rewards_count > 2 or self.gs_rewards_count <= 1:
             weight = 0
 
         return weight
@@ -167,7 +167,7 @@ class Trainer:
             if self.online_time >= threshold:
                 self.gs_rewards_count += 1
                 self.online_time = 0
-                weight = 400
+                weight = 1000
 
         if (self.gs_rewards_count > 4 and self.ds_rewards_count == 0) or self.gs_rewards_count > 6:
             weight = 0
@@ -213,16 +213,17 @@ class Trainer:
         flag_0_7 = 0.148 < ds[0] < 0.35 or 0.148 < ds[7] < 0.35
         flag_1_6 = 0.148 < ds[1] < 0.35 or 0.148 < ds[6] < 0.35
         flag_2_5 = 0.148 < ds[2] < 0.35 or 0.148 < ds[5] < 0.35
-        flag_for_right = 0.148 < ds[5] < 0.35
-        flag_for_left = 0.148 < ds[2] < 0.35
+        flag_for_right = 0.148 < ds[2] < 0.35
+        flag_for_left = 0.148 < ds[5] < 0.35
         left = gs[0] < 0.5
         center = gs[1] < 0.5
         right = gs[2] < 0.5
+        offline = not left and not center and not right
+
         gs_choose_right = ls > 0 and left and not right
         gs_choose_left = ls < 0 and right and not left
         ds_choose_right = ls > 0 and flag_for_right
         ds_choose_left = ls < 0 and flag_for_left
-        offline = not left and not center and not right
 
         if offline:
             self.offline_time += 1

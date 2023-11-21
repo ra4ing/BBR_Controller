@@ -284,7 +284,7 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(18, 20):
+        for i in range(3, 20):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
             # self.trainer.genotype = np.load("../pre_module/right_reach.npy")
@@ -335,11 +335,8 @@ class Controller:
 
             self.time_count += self.time_step
             if self.state == 4:
-                if (self.time_count / 1000) > 15:
-                    print(self.time_count / 1000)
-                    break
-                else:
-                    self.state = 0
+                print(self.time_count / 1000)
+                break
             elif (self.time_count / 1000) >= self.max_time:
                 break
         print(self.trainer.gs_rewards_count)
