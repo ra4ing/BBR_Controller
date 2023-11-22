@@ -3,22 +3,24 @@ import random
 
 import numpy as np
 
-state1_0 = np.load("../pre_module/state1_0.npy")
+know_road = np.load("../pre_module/know_road.npy")
 right_reach_goal = np.load("../pre_module/right_reach.npy")
 left_reach_goal = np.load("../pre_module/left_reach.npy")
-nb = np.load("../pre_module/nb.npy")
+know_road_and_left = np.load("../pre_module/know_road_and_left.npy")
+know_road_and_right = np.load("../pre_module/know_road_and_right.npy")
+reach_goal = np.load("../pre_module/reach_goal.npy")
 
 class GA:
     # DEFINE here the 3 GA Parameters:
     num_generations = 200
     num_population = 50
     num_elite = 20
-    cp = 90
+    cp = 85
     mp = 15
 
     @staticmethod
     def population_reproduce(genotypes):
-        global state1_0
+        global know_road
         global left_reach_goal
         global right_reach_goal
 
@@ -38,7 +40,7 @@ class GA:
             elif random.randint(1, 100) < GA.cp:
                 parent1 = GA.__select_parent(genotypes_not_ranked)
                 parent2 = GA.__select_parent(genotypes_not_ranked)
-                # parent1 = [state1_0, 10]
+
                 child = GA.__crossover(parent1, parent2)
                 offspring = GA.__mutation(child)
                 new_population.append(numpy.array(offspring))
@@ -101,7 +103,7 @@ class GA:
 
     @staticmethod
     def create_random_population(num_weights):
-        global state1_0
+        global know_road
         global left_reach_goal
         global right_reach_goal
         #  Size of the population and genotype
@@ -109,8 +111,12 @@ class GA:
         # Create the initial population with random weights
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
 
-        for i in range(10):
-            population[i] = nb
+        for i in range(0, 5):
+            population[i] = know_road_and_left
+        for i in range(5, 10):
+            population[i] = know_road_and_right
+        for i in range(10, 15):
+            population[i] = reach_goal
         # population[0] = state1_0
         # population[1] = state1_0
         # population[2] = state1_0
@@ -132,3 +138,5 @@ class GA:
         #     population[15 + i] = tmp
 
         return population
+# 左杂交，右编译
+# 10 17

@@ -278,13 +278,13 @@ class Controller:
             # Generate the new population_idx using genetic operators
             if generation < GA.num_generations - 1:
                 populations = GA.population_reproduce(current_population)
-            # state1_0 = np.load("../pre_module/state1_0.npy")
+            # state1_0 = np.load("../pre_module/know_road.npy")
             # populations[-1] = state1_0
         # print("All Genotypes: {}".format(self.genotypes))
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(3, 20):
+        for i in range(0, 20):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
             # self.trainer.genotype = np.load("../pre_module/right_reach.npy")

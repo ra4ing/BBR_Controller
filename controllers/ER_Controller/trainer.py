@@ -113,7 +113,6 @@ class Trainer:
         while self.receiver.getQueueLength() > 0:
             self.wait_message = True
             received_data = self.receiver.getString()
-            # print(received_data)
             if received_data is not None:
                 return received_data
             self.receiver.nextPacket()
@@ -144,11 +143,12 @@ class Trainer:
 
     def __cal_distance_weight(self, choose_right, choose_left):
         weight = 0
-        threshold = 20
+        threshold = 50
 
         if choose_right or choose_left:
             self.avoid_collision_time += 1
             if self.avoid_collision_time >= threshold and self.enable_dis_reward:
+                # print("###")
                 self.ds_rewards_count += 1
                 self.avoid_collision_time = 0
                 self.enable_dis_reward = False
@@ -169,7 +169,7 @@ class Trainer:
                 self.online_time = 0
                 weight = 1000
 
-        if (self.gs_rewards_count > 4 and self.ds_rewards_count == 0) or self.gs_rewards_count > 6:
+        if (self.gs_rewards_count > 2 and self.ds_rewards_count == 0) or self.gs_rewards_count > 4:
             weight = 0
 
         return weight
@@ -222,7 +222,7 @@ class Trainer:
 
         gs_choose_right = ls > 0 and left and not right
         gs_choose_left = ls < 0 and right and not left
-        ds_choose_right = ls > 0 and flag_for_right
+        ds_choose_right = ls > 0 and flag_for_left
         ds_choose_left = ls < 0 and flag_for_left
 
         if offline:
