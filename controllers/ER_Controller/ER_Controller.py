@@ -228,7 +228,7 @@ class Controller:
 
         fitness_per_trial = []
 
-        number_interaction_loops = 1
+        number_interaction_loops = 3
         for i in range(number_interaction_loops):
             self.trainer.reset_environment("right")
             self.trainer.wait_reset_complete()
@@ -284,11 +284,12 @@ class Controller:
         print("GA optimization terminated.\n")
 
     def run_best(self):
-        for i in range(0, 20):
+        for i in range(8, 20):
             print("++++++++++++++++++++++++++++++++++++++++++++++")
             print("Best {}".format(i))
-            # self.trainer.genotype = np.load("../pre_module/right_reach.npy")
-            self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
+            # self.trainer.genotype = np.load("../pre_module/know_road_and_right.npy")
+            # self.trainer.genotype = np.load("../module/Best{}.npy".format(i))
+            self.trainer.genotype = np.load("../pre_module/reach_goal.npy")
             self.trainer.update_mlp()
 
             # trial: right
@@ -315,8 +316,8 @@ class Controller:
 
         if self.trainer.gs_rewards_count > 0 and self.trainer.ds_rewards_count > 0:
             if self.state == 4:
-                fitness += 0.3
-                fitness -= self.time_count / 1000_000
+                fitness += 1
+                fitness -= self.time_count / 2000_00
 
         if self.trainer.gs_rewards_count > 8 or self.trainer.ds_rewards_count > 8:
             return 0

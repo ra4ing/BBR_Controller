@@ -6,17 +6,18 @@ import numpy as np
 know_road = np.load("../pre_module/know_road.npy")
 right_reach_goal = np.load("../pre_module/right_reach.npy")
 left_reach_goal = np.load("../pre_module/left_reach.npy")
-know_road_and_left = np.load("../pre_module/know_road_and_left.npy")
+know_road_and_left = np.load("../pre_module/nearly_reach.npy")
 know_road_and_right = np.load("../pre_module/know_road_and_right.npy")
 reach_goal = np.load("../pre_module/reach_goal.npy")
+
 
 class GA:
     # DEFINE here the 3 GA Parameters:
     num_generations = 200
-    num_population = 50
-    num_elite = 20
-    cp = 85
-    mp = 15
+    num_population = 10
+    num_elite = 4
+    cp = 100
+    mp = 10
 
     @staticmethod
     def population_reproduce(genotypes):
@@ -39,14 +40,15 @@ class GA:
                 new_population.append(genotypes[individual - 1][0])
             elif random.randint(1, 100) < GA.cp:
                 parent1 = GA.__select_parent(genotypes_not_ranked)
-                parent2 = GA.__select_parent(genotypes_not_ranked)
-
-                child = GA.__crossover(parent1, parent2)
-                offspring = GA.__mutation(child)
+                # parent2 = GA.__select_parent(genotypes_not_ranked)
+                #
+                # child = GA.__crossover(parent1, parent2)
+                # offspring = GA.__mutation(child)
+                offspring = GA.__mutation(parent1[0])
                 new_population.append(numpy.array(offspring))
             else:
                 new_population.append(np.random.uniform(low=-1, high=1, size=len(genotypes[0][0])))
-
+        new_population[-1] = reach_goal
         return new_population
 
     @staticmethod
@@ -111,11 +113,11 @@ class GA:
         # Create the initial population with random weights
         population = np.random.uniform(low=-1, high=1.0, size=pop_size)
 
-        for i in range(0, 5):
-            population[i] = know_road_and_left
-        for i in range(5, 10):
-            population[i] = know_road_and_right
-        for i in range(10, 15):
+        # for i in range(0, 10):
+        #     population[i] = know_road_and_left
+        # for i in range(10, 20):
+        #     population[i] = know_road_and_right
+        for i in range(0, GA.num_elite):
             population[i] = reach_goal
         # population[0] = state1_0
         # population[1] = state1_0

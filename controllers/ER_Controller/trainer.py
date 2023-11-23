@@ -200,6 +200,7 @@ class Trainer:
         self.ff += ((speed[0] + speed[1]) / 2.0) / (6.28 * 100)
         self.af += (0.5 - max(self.inputs[3:11])) / 100
         self.sp += (0.5 - self.normalize_value(abs(speed[0] - speed[1]), 0, 12.56)) / 100
+        scale = max((self.ff + self.af + self.sp), 0)
 
         if min(speed) < 0:
             self.online_time = 0
@@ -213,8 +214,8 @@ class Trainer:
         flag_0_7 = 0.148 < ds[0] < 0.35 or 0.148 < ds[7] < 0.35
         flag_1_6 = 0.148 < ds[1] < 0.35 or 0.148 < ds[6] < 0.35
         flag_2_5 = 0.148 < ds[2] < 0.35 or 0.148 < ds[5] < 0.35
-        flag_for_right = 0.148 < ds[2] < 0.35
-        flag_for_left = 0.148 < ds[5] < 0.35
+        flag_for_right = 0.148 < ds[2] < 0.35 or 0.148 < ds[1] < 0.35
+        flag_for_left = 0.148 < ds[5] < 0.5 or 0.148 < ds[6] < 0.5
         left = gs[0] < 0.5
         center = gs[1] < 0.5
         right = gs[2] < 0.5
@@ -239,7 +240,6 @@ class Trainer:
         # rewards
         ground_rewards = self.__cal_ground_weight(gs_choose_right, gs_choose_left)
         distance_rewards = self.__cal_distance_weight(ds_choose_right, ds_choose_left)
-        scale = max((self.ff + self.af + self.sp), 0)
 
         if flag_0_7 or flag_1_6 or flag_2_5:
             ground_rewards = 0
