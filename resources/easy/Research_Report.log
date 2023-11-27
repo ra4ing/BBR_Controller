@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.1)  27 NOV 2023 00:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.1)  27 NOV 2023 01:27
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**"c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/IEEE-Transactions-LaTeX2e-templates-and-instruction/New_IEEEtran_how-to.tex"
-(c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/IEEE-Transactions-LaTeX2e-templates-and-instruction/New_IEEEtran_how-to.tex
+**"c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/easy/Research_Report.tex"
+(c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/easy/Research_Report.tex
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-10-23>
 (c:/texlive/2023/texmf-dist/tex/latex/ieeetran/IEEEtran.cls
@@ -270,8 +270,8 @@ Package: balance 1999/02/23 4.3 (PWD)
 File: l3backend-pdftex.def 2023-10-23 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count292
 \l__pdf_internal_box=\box57
-) (./New_IEEEtran_how-to.aux)
-\openout1 = `New_IEEEtran_how-to.aux'.
+) (./Research_Report.aux)
+\openout1 = `Research_Report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
 LaTeX Font Info:    ... okay on input line 18.
@@ -310,46 +310,33 @@ Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
  (c:/texlive/2023/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
-))
-
-LaTeX Warning: Citation `lheeBufferOverflowFormat2003' on page 1 undefined on input line 31.
-
-(./New_IEEEtran_how-to.bbl
-
-./New_IEEEtran_how-to.bbl:23: LaTeX Error: Something's wrong--perhaps a missing \item.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.23 \end{thebibliography}
-                          
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-) [1{c:/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/texlive/2023/texmf-dist/fonts/enc/dvips/base/8r.enc}
+)) (./Research_Report.bbl
+LaTeX Font Info:    Trying to load font information for U+msa on input line 25.
+ (c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 25.
+ (c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)) [1{c:/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/texlive/2023/texmf-dist/fonts/enc/dvips/base/8r.enc}
 
 
-] (./New_IEEEtran_how-to.aux)
+] (./Research_Report.aux)
  ***********
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-10-23>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
  ) 
 Here is how much of TeX's memory you used:
- 4487 strings out of 474397
- 77840 string characters out of 5754185
- 1925036 words of memory out of 5000000
- 26530 multiletter control sequences out of 15000+600000
- 589621 words of font info for 86 fonts, out of 8000000 for 9000
+ 4534 strings out of 474397
+ 78294 string characters out of 5754185
+ 1927036 words of memory out of 5000000
+ 26557 multiletter control sequences out of 15000+600000
+ 593395 words of font info for 101 fonts, out of 8000000 for 9000
  1145 hyphenation exceptions out of 8191
- 57i,6n,65p,352b,171s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,6n,65p,437b,386s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on New_IEEEtran_how-to.pdf (1 page, 34088 bytes).
+Output written on Research_Report.pdf (1 page, 42351 bytes).
 PDF statistics:
  29 PDF objects out of 1000 (max. 8388607)
  17 compressed objects within 1 object stream

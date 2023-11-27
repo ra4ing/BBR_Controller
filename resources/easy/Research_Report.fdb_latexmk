@@ -1,17 +1,17 @@
 # Fdb version 4
-["bibtex New_IEEEtran_how-to"] 0 "New_IEEEtran_how-to.aux" "New_IEEEtran_how-to.bbl" "New_IEEEtran_how-to" 0 -1
+["bibtex Research_Report"] 1701048453 "Research_Report.aux" "Research_Report.bbl" "Research_Report" 1701048456 0
   "./Bibliography.bib" 1701024204 493 cfcc7d115d9baee08cb145b2da8a2d98 ""
-  "New_IEEEtran_how-to.aux" 1701046226 590 d9cf9bc6c4bd5638a5ab3abd38c7b02b "pdflatex"
+  "Research_Report.aux" 1701048455 1404 a17438527d8b68ae4d4d8a903a776c42 "pdflatex"
   "c:/texlive/2023/texmf-dist/bibtex/bst/ieeetran/IEEEtran.bst" 1698860214 57748 7c8250ecf02814ce6ddc0cdbb63df1dd ""
   (generated)
-  "New_IEEEtran_how-to.bbl"
-  "New_IEEEtran_how-to.blg"
+  "Research_Report.bbl"
+  "Research_Report.blg"
   (rewritten before read)
-["pdflatex"] 1701046225 "c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/IEEE-Transactions-LaTeX2e-templates-and-instruction/New_IEEEtran_how-to.tex" "New_IEEEtran_how-to.pdf" "New_IEEEtran_how-to" 1701046227 2
-  "New_IEEEtran_how-to.aux" 1701046226 590 d9cf9bc6c4bd5638a5ab3abd38c7b02b "pdflatex"
-  "New_IEEEtran_how-to.bbl" 1701046195 875 029899f8cae5a02a002a6c630007a1ad "bibtex New_IEEEtran_how-to"
-  "New_IEEEtran_how-to.tex" 1701046223 876 724440aa686714966981384b5f39b12b ""
-  "c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/IEEE-Transactions-LaTeX2e-templates-and-instruction/New_IEEEtran_how-to.tex" 1701046223 876 724440aa686714966981384b5f39b12b ""
+["pdflatex"] 1701048454 "c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/easy/Research_Report.tex" "Research_Report.pdf" "Research_Report" 1701048456 0
+  "Research_Report.aux" 1701048455 1404 a17438527d8b68ae4d4d8a903a776c42 "pdflatex"
+  "Research_Report.bbl" 1701048454 1229 d1a94865a65b28477d884b63ae0a07d0 "bibtex Research_Report"
+  "Research_Report.tex" 1701048450 1129 2e61d206d17e7df7e4712202c100bad1 ""
+  "c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/easy/Research_Report.tex" 1701048450 1129 2e61d206d17e7df7e4712202c100bad1 ""
   "c:/texlive/2023/texmf-dist/fonts/enc/dvips/base/8r.enc" 1698859433 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "c:/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1698859778 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1698862601 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -23,6 +23,20 @@
   "c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmrc7t.tfm" 1698862601 2680 312a2d12b1f1df8ee0212e7ba1962402 ""
   "c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmri7t.tfm" 1698862601 2288 f478fc8fed18759effb59f3dad7f3084 ""
   "c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmri8r.tfm" 1698862601 4640 532ca3305aad10cc01d769f3f91f1029 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1698858347 1004 54797486969f23fa377b128694d548df ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1698858347 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1698858347 916 f87d7c45f9c908e672703b83b72241a3 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm" 1698858347 924 9904cf1d39e9767e7a3622f2a125a565 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam7.tfm" 1698858347 928 2dc8d444221b7a635bb58038579b861a ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm" 1698858347 908 2921f8a10601f252058503cc6570e581 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm" 1698858347 940 75ac932a52f80982a9f8ea75d03a34cf ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm" 1698858347 940 228d6584342e91276bf566bcf9716b83 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm" 1698859025 1512 f21f83efb36853c0b70002322c1ab3ad ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm" 1698859025 1520 eccf95517727cb11801f4f1aee3a21b4 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmr6.tfm" 1698859025 1300 b62933e007d01cfd073f79b963c01526 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmr8.tfm" 1698859025 1292 21c1c5bfeaebccffdb478fd231a0997d ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm" 1698859025 1116 933a60c408fc0a863a92debe84b2d294 ""
+  "c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm" 1698859025 1120 8b7d695260f3cff42e636090a8002094 ""
   "c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmb8a.pfb" 1698862601 44729 fea0975e20ec51c992338362f05f1146 ""
   "c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb" 1698862601 44656 0cbca70e0534538582128f6b54593cca ""
   "c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmr8a.pfb" 1698862601 46026 687528a208fbfc1f00832bb96cccebbb ""
@@ -35,6 +49,8 @@
   "c:/texlive/2023/texmf-dist/tex/context/base/mkii/supp-pdf.mkii" 1698861018 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "c:/texlive/2023/texmf-dist/tex/latex/algorithms/algorithmic.sty" 1698858325 9318 793e9d5a71e74e730d97f6bf5d7e2bca ""
   "c:/texlive/2023/texmf-dist/tex/latex/amsfonts/amsfonts.sty" 1698858347 5949 3f3fd50a8cc94c3d4cbf4fc66cd3df1c ""
+  "c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd" 1698858347 961 6518c6525a34feb5e8250ffa91731cff ""
+  "c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd" 1698858347 961 d02606146ba5601b5645f987c92e6193 ""
   "c:/texlive/2023/texmf-dist/tex/latex/amsmath/amsbsy.sty" 1698858351 2222 499d61426192c39efd8f410ee1a52b9c ""
   "c:/texlive/2023/texmf-dist/tex/latex/amsmath/amsgen.sty" 1698858351 4173 82ac04dfb1256038fad068287fbb4fe6 ""
   "c:/texlive/2023/texmf-dist/tex/latex/amsmath/amsmath.sty" 1698858351 88371 d84032c0f422c3d1e282266c01bef237 ""
@@ -67,7 +83,7 @@
   "c:/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1698863492 8208562 914a4e7ad693f425fa50319c9ac87e93 ""
   "c:/texlive/2023/texmf.cnf" 1698863193 713 e69b156964470283e0530f5060668171 ""
   (generated)
-  "New_IEEEtran_how-to.aux"
-  "New_IEEEtran_how-to.log"
-  "New_IEEEtran_how-to.pdf"
+  "Research_Report.aux"
+  "Research_Report.log"
+  "Research_Report.pdf"
   (rewritten before read)

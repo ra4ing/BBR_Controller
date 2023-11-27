@@ -1,5 +1,3 @@
-import time
-
 import numpy as np
 from controller import Robot
 from pid import PID
@@ -38,7 +36,7 @@ class Controller:
 
         self.pid = PID(1.0, 0.07, 0.02)  # Init PID
         self.time_count = 0  # Count time spent
-        self.finish_obstacles = False  # Used to control the car back on line
+        self.finish_obstacles = False  # Used to control the car back on the line
 
     def __enable_camera(self):
         """
@@ -264,7 +262,7 @@ class Controller:
         """
         Checks camera images at regular intervals (every 1600 ms). If the central pixel of the
         camera image meets specific color criteria (red component > 100, green < 100, blue < 100),
-        the method counts pixels in the entire image that meet this criteria. If the count exceeds
+        the method counts pixels in the entire image that meet these criteria. If the count exceeds
         200, it changes the state to indicate a goal has been reached (state 4).
         """
         # Perform check every 1600 ms

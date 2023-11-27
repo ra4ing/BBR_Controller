@@ -21,6 +21,7 @@ class Reset:
 
     def __init_display(self):
         # Display: screen to plot the fitness values of the best individual and the average of the entire population
+        # Reuse from lab4 example
         self.display = self.supervisor.getDevice("display")
         self.width = self.display.getWidth()
         self.height = self.display.getHeight()
@@ -28,11 +29,13 @@ class Reset:
         self.prev_average_fitness = 0.0
         self.display.drawText("Fitness (Best - Red)", 0, 0)
         self.display.drawText("Fitness (Average - Green)", 0, 10)
+        # End lab4 example
 
     def __init_parameters(self):
         self.time_step = 32
 
     def __init_robot_node(self):
+        # Reuse from lab4 example
         self.robot_node = self.supervisor.getFromDef("Robot")
         self.trans_field = self.robot_node.getField("translation")
         self.rot_field = self.robot_node.getField("rotation")
@@ -40,6 +43,7 @@ class Reset:
         self.end_position = [0.102188, 0.901722, -6.3962e-05]
         self.initial_trans = [-0.685987, -0.66, -6.3949e-05]
         self.initial_rot = [0.000585216, -0.000550635, 1, 1.63194]
+        # End lab4 example
 
     def __init_obstacle_node(self):
         obs_wooden_1 = self.supervisor.getFromDef("wooden_box_1")
@@ -82,13 +86,16 @@ class Reset:
         self.receiver.enable(self.time_step)
 
     def draw_scaled_line(self, generation, y1, y2, num_generations):
+        # Reuse from lab4 example
         # the scale of the fitness plot
         XSCALE = int(self.width / num_generations)
         YSCALE = 100
         self.display.drawLine((generation - 1) * XSCALE, self.height - int(y1 * YSCALE), generation * XSCALE,
                               self.height - int(y2 * YSCALE))
+        # End lab4 example
 
     def plot_fitness(self, generation, best_fitness, average_fitness, num_generations):
+        # Reuse from lab4 example
         if generation > 0:
             self.display.setColor(0xff0000)  # red
             self.draw_scaled_line(generation, self.prev_best_fitness, best_fitness, num_generations)
@@ -98,6 +105,7 @@ class Reset:
 
         self.prev_best_fitness = best_fitness
         self.prev_average_fitness = average_fitness
+        # End lab4 example
 
     def handle_receiver(self):
         self.received = False
@@ -151,7 +159,6 @@ class Reset:
         self.light_on.setSFBool(False)
 
     def train(self):
-        # print("Run Simulation")
         while self.supervisor.step(self.time_step) != -1:
             self.handle_receiver()
 
@@ -162,6 +169,7 @@ if __name__ == '__main__':
     supervisor = Supervisor()
     trainer = Reset(supervisor)
 
+    # Reuse from lab4 example
     # Function used to run the best individual or the GA
     keyboard = Keyboard()
     keyboard.enable(50)
@@ -176,6 +184,7 @@ if __name__ == '__main__':
     print("getting key...")
     while trainer.supervisor.step(trainer.time_step) != -1 and resp not in [82, 83, 65619]:
         resp = keyboard.getKey()
+    # End lab4 example
 
     if resp == 83 or resp == 65619:
         trainer.send_message("True")

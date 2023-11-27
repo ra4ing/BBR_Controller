@@ -1,9 +1,9 @@
-PWD c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/IEEE-Transactions-LaTeX2e-templates-and-instruction
+PWD c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/easy
 INPUT c:/texlive/2023/texmf.cnf
 INPUT c:/texlive/2023/texmf-dist/web2c/texmf.cnf
 INPUT c:/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/IEEE-Transactions-LaTeX2e-templates-and-instruction/New_IEEEtran_how-to.tex
-OUTPUT New_IEEEtran_how-to.log
+INPUT c:/Users/ra4ing/Desktop/Intelligent Robotics/resources/easy/Research_Report.tex
+OUTPUT Research_Report.log
 INPUT c:/texlive/2023/texmf-dist/tex/latex/ieeetran/IEEEtran.cls
 INPUT c:/texlive/2023/texmf-dist/tex/latex/ieeetran/IEEEtran.cls
 INPUT c:/texlive/2023/texmf-dist/tex/latex/psnfss/ot1ptm.fd
@@ -102,10 +102,10 @@ INPUT c:/texlive/2023/texmf-dist/tex/latex/preprint/balance.sty
 INPUT c:/texlive/2023/texmf-dist/tex/latex/preprint/balance.sty
 INPUT c:/texlive/2023/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT c:/texlive/2023/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
-INPUT ./New_IEEEtran_how-to.aux
-INPUT ./New_IEEEtran_how-to.aux
-INPUT New_IEEEtran_how-to.aux
-OUTPUT New_IEEEtran_how-to.aux
+INPUT ./Research_Report.aux
+INPUT ./Research_Report.aux
+INPUT Research_Report.aux
+OUTPUT Research_Report.aux
 INPUT c:/texlive/2023/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT c:/texlive/2023/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT c:/texlive/2023/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
@@ -115,10 +115,31 @@ INPUT c:/texlive/2023/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 INPUT c:/texlive/2023/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 INPUT c:/texlive/2023/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 INPUT c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmrc7t.tfm
-INPUT ./New_IEEEtran_how-to.bbl
-INPUT ./New_IEEEtran_how-to.bbl
-INPUT New_IEEEtran_how-to.bbl
-OUTPUT New_IEEEtran_how-to.pdf
+INPUT ./Research_Report.bbl
+INPUT ./Research_Report.bbl
+INPUT Research_Report.bbl
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmr8.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmr6.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
+INPUT c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
+INPUT c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
+INPUT c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam7.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm
+INPUT c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd
+INPUT c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd
+INPUT c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
+OUTPUT Research_Report.pdf
 INPUT c:/texlive/2023/texmf-dist/fonts/vf/adobe/times/ptmr7t.vf
 INPUT c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT c:/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map
@@ -134,12 +155,12 @@ INPUT c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT c:/texlive/2023/texmf-dist/fonts/vf/adobe/times/ptmrc7t.vf
 INPUT c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmr8r.tfm
-INPUT c:/texlive/2023/texmf-dist/fonts/vf/adobe/times/ptmr7t.vf
-INPUT c:/texlive/2023/texmf-dist/fonts/vf/adobe/times/ptmb7t.vf
-INPUT c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT c:/texlive/2023/texmf-dist/fonts/vf/adobe/times/ptmri7t.vf
 INPUT c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmri8r.tfm
-INPUT New_IEEEtran_how-to.aux
+INPUT c:/texlive/2023/texmf-dist/fonts/vf/adobe/times/ptmr7t.vf
+INPUT c:/texlive/2023/texmf-dist/fonts/vf/adobe/times/ptmri7t.vf
+INPUT c:/texlive/2023/texmf-dist/fonts/tfm/adobe/times/ptmri8r.tfm
+INPUT Research_Report.aux
 INPUT c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 INPUT c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb
 INPUT c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmr8a.pfb
