@@ -8,23 +8,22 @@ class PidDebug:
         self.outputs = []
 
     def plt(self, p, i, d):
-        # 创建一个新的图形窗口
+        # create figure
         plt.figure()
 
-        # 创建第一个子图，用于绘制误差
+        # sub figure for error
         plt.subplot(2, 1, 1)
 
         plt.plot(self.errors)
         plt.title('P: {} I: {} D: {}'.format(p, i, d))
         plt.ylabel('error')
 
-        # 创建第二个子图，用于绘制PID输出
+        # sub figure for output of pid
         plt.subplot(2, 1, 2)
         plt.plot(self.outputs)
         plt.xlabel('time')
         plt.ylabel('output')
 
-        # 显示图形
         plt.show()
 
     def get_value(self, error, output):

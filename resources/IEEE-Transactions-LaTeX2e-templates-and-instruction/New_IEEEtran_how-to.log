@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.1)  19 NOV 2023 11:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.1)  26 NOV 2023 18:50
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -22,7 +22,7 @@ LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 50
 (c:/texlive/2023/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 )
--- Using 8.5in x 11in (letter) paper.
+-- Using 210mm x 297mm (a4) paper.
 -- Using PDF output.
 \@IEEEnormalsizeunitybaselineskip=\dimen143
 -- This is a 10 point document.
@@ -255,6 +255,14 @@ File: pdftex.def 2022/09/22 v1.2b Graphics/color driver for pdftex
 ))
 \Gin@req@height=\dimen184
 \Gin@req@width=\dimen185
+) (c:/texlive/2023/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2021/02/14 v1.3d Input encoding file
+\inpenc@prehook=\toks27
+\inpenc@posthook=\toks28
+) (c:/texlive/2023/texmf-dist/tex/latex/cite/cite.sty
+LaTeX Info: Redefining \cite on input line 302.
+LaTeX Info: Redefining \nocite on input line 332.
+Package: cite 2015/02/27  v 5.5
 ) (c:/texlive/2023/texmf-dist/tex/latex/preprint/balance.sty
 Package: balance 1999/02/23 4.3 (PWD)
 \oldvsize=\dimen186
@@ -262,28 +270,23 @@ Package: balance 1999/02/23 4.3 (PWD)
 File: l3backend-pdftex.def 2023-10-23 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count292
 \l__pdf_internal_box=\box57
-)
-
-LaTeX Warning: Unused global option(s):
-    [lettersize].
-
-(./New_IEEEtran_how-to.aux)
+) (./New_IEEEtran_how-to.aux)
 \openout1 = `New_IEEEtran_how-to.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
 
 -- Lines per column: 58 (exact).
 Package caption Info: Begin \AtBeginDocument code.
@@ -296,208 +299,47 @@ Package caption Info: End \AtBeginDocument code.
 \scratchbox=\box58
 \nofMPsegments=\count294
 \nofMParguments=\count295
-\everyMPshowfont=\toks27
+\everyMPshowfont=\toks29
 \MPscratchCnt=\count296
 \MPscratchDim=\dimen188
 \MPnumerator=\count297
 \makeMPintoPDFobject=\count298
-\everyMPtoPDFconversion=\toks28
+\everyMPtoPDFconversion=\toks30
 ) (c:/texlive/2023/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
  (c:/texlive/2023/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
-))
-LaTeX Font Info:    Calculating math sizes for size <24> on input line 23.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 23.
+)) (./New_IEEEtran_how-to.bbl
+LaTeX Font Info:    Trying to load font information for U+msa on input line 25.
  (c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 23.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 25.
  (c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 52.
- (c:/texlive/2023/texmf-dist/tex/latex/psnfss/ts1ptm.fd
-File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-)
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 72.
- (c:/texlive/2023/texmf-dist/tex/latex/psnfss/ot1pcr.fd
-File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
-)
-Underfull \hbox (badness 10000) in paragraph at lines 72--73
-
- []
+)) [1{c:/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/texlive/2023/texmf-dist/fonts/enc/dvips/base/8r.enc}
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 74--75
-
- []
-
-
-Overfull \hbox (31.00002pt too wide) in paragraph at lines 76--77
-[]$\OMS/cmsy/m/n/10 n$\OT1/pcr/m/n/10 documentclass[10pt,journal,compsoc]IEEEtran 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 76--77
-
- []
-
-
-Overfull \hbox (19.00002pt too wide) in paragraph at lines 78--79
-[]$\OMS/cmsy/m/n/10 n$\OT1/pcr/m/n/10 documentclass[conference,compsoc]IEEEtran 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 78--79
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 80--81
-
- []
-
-[1{c:/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/texlive/2023/texmf-dist/fonts/enc/dvips/base/8r.enc}
-
-
-]
-Overfull \hbox (6.0pt too wide) in paragraph at lines 102--102
-[]\OT1/pcr/m/n/10 \IEEEmembership{Fellow, IEEE}, Masaki Owari[] 
- []
-
-
-Underfull \hbox (badness 4467) in paragraph at lines 111--113
-\OT1/ptm/m/n/10 tify IEEE mem-ber-ship sta-tus. Please see the ``IEEE-
- []
-
-
-Underfull \hbox (badness 1715) in paragraph at lines 128--129
-\OT1/ptm/m/n/10 The ab-stract is the first el-e-ment of a pa-per af-ter the
- []
-
-
-Overfull \hbox (12.0pt too wide) in paragraph at lines 149--149
-[]\OT1/pcr/m/n/10 \IEEEPARstart{T}{his} is the first paragraph[] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 169--170
-
- []
-
-[2]
-<fig1.png, id=15, 188.20313pt x 173.89969pt>
-File: fig1.png Graphic file (type png)
-<use fig1.png>
-Package pdftex.def Info: fig1.png  used on input line 204.
-(pdftex.def)             Requested size: 180.67499pt x 166.95505pt.
-
-Underfull \hbox (badness 3281) in paragraph at lines 265--266
-\OT1/ptm/m/n/10 un-num-bered, num-bered and bul-leted. There have been
- []
-
-
-Underfull \hbox (badness 2213) in paragraph at lines 265--266
-\OT1/ptm/m/n/10 be-low, please re-fer to the ``IEEE-tran[]HOWTO.pdf'' for
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 265--266
-
- []
-
-[3 <./fig1.png>]
-Underfull \hbox (badness 5388) in paragraph at lines 347--348
-\OT1/ptm/b/n/10 References Sim-pli-fied: \OT1/ptm/m/n/10 A sim-ple way of com-pos-ing
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 347--348
-
- []
-
-
-Overfull \hbox (6.0pt too wide) in paragraph at lines 381--381
-[]\OT1/pcr/m/n/10 \textit{International Journal of Modelling,[] 
- []
-
-
-Overfull \hbox (6.0pt too wide) in paragraph at lines 393--393
-[]\OT1/pcr/m/n/10 systems using a port-controlled Hamiltonian[] 
- []
-
-
-Overfull \hbox (12.0pt too wide) in paragraph at lines 394--394
-[]\OT1/pcr/m/n/10 description,'' in \textit{Proceedings of the[] 
- []
-
-[4]
-Underfull \hbox (badness 10000) in paragraph at lines 450--451
-[]\OT1/ptm/m/n/10 Further ex-am-ples can be seen at $http : / / journals .
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 450--451
-\OT1/ptm/m/n/10 ieeeauthorcenter . ieee . org / wp-[]content / uploads / sites / 7 /
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 474--476
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 477--479
-
- []
-
-[5] [6]
-LaTeX Font Info:    Trying to load font information for OMS+pcr on input line 731.
- (c:/texlive/2023/texmf-dist/tex/latex/psnfss/omspcr.fd
-File: omspcr.fd 
-)
-LaTeX Font Info:    Font shape `OMS/pcr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 731.
-
-Underfull \hbox (badness 10000) in paragraph at lines 747--748
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 752--753
-
- []
-
-[7]
-File: fig1.png Graphic file (type png)
-<use fig1.png>
-Package pdftex.def Info: fig1.png  used on input line 861.
-(pdftex.def)             Requested size: 72.27031pt x 66.77777pt.
-File: fig1.png Graphic file (type png)
-<use fig1.png>
-Package pdftex.def Info: fig1.png  used on input line 861.
-(pdftex.def)             Requested size: 72.27031pt x 66.77777pt.
- [8] (./New_IEEEtran_how-to.aux)
+] (./New_IEEEtran_how-to.aux)
  ***********
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-10-23>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4624 strings out of 474397
- 79962 string characters out of 5754185
- 1945036 words of memory out of 5000000
- 26624 multiletter control sequences out of 15000+600000
- 619693 words of font info for 155 fonts, out of 8000000 for 9000
+ 4534 strings out of 474397
+ 78503 string characters out of 5754185
+ 1926036 words of memory out of 5000000
+ 26557 multiletter control sequences out of 15000+600000
+ 593395 words of font info for 101 fonts, out of 8000000 for 9000
  1145 hyphenation exceptions out of 8191
- 57i,12n,65p,958b,338s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on New_IEEEtran_how-to.pdf (8 pages, 267430 bytes).
+ 57i,6n,65p,488b,386s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/texlive/2023/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on New_IEEEtran_how-to.pdf (1 page, 39369 bytes).
 PDF statistics:
- 126 PDF objects out of 1000 (max. 8388607)
- 76 compressed objects within 1 object stream
+ 29 PDF objects out of 1000 (max. 8388607)
+ 17 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 18 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

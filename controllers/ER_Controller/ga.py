@@ -3,6 +3,7 @@ import random
 
 import numpy as np
 
+# The intermediate process of training
 know_road = np.load("../pre_module/know_road.npy")
 right_reach_goal = np.load("../pre_module/right_reach.npy")
 left_reach_goal = np.load("../pre_module/left_reach.npy")
